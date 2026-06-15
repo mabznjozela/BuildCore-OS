@@ -1,0 +1,1801 @@
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  INITIAL_JOBS,
+  INITIAL_TASKS,
+  INITIAL_FINANCIALS,
+  INITIAL_FILES,
+  INITIAL_NOTES
+} from './mockData';
+import { Job, Task, FinancialRecord, VaultFile, JobNote, JobStatus, ProjectHealth } from './types';
+import CommandCentre from './components/CommandCentre';
+import WorkflowSection from './components/WorkflowSection';
+import SpecificationsSection from './components/SpecificationsSection';
+import VisualVault from './components/VisualVault';
+import FinancialsSection from './components/FinancialsSection';
+import NotesSection from './components/NotesSection';
+import PowerBiSync from './components/PowerBiSync';
+import NewJobModal from './components/NewJobModal';
+import { 
+  getSevenDemoClients, 
+  getSevenDemoTasks, 
+  getSevenDemoFinancials, 
+  getSevenDemoFiles, 
+  getSevenDemoNotes 
+} from './demoSeeder';
+import { BookOpen, Smartphone, WifiOff, Sliders, ShieldCheck, Database, Trash2 } from 'lucide-react';
+import {
+  Wrench,
+  Layers,
+  Heart,
+  TrendingUp,
+  AlertTriangle,
+  PlusCircle,
+  Search,
+  Filter,
+  CheckCircle,
+  HelpCircle,
+  Info,
+  ExternalLink,
+  ChevronRight,
+  ChevronLeft,
+  ArrowRight,
+  Sparkles,
+  Clock
+} from 'lucide-react';
+
+export default function App() {
+  // --- LocalStorage State Hydraton & Hooks ---
+  const [jobs, setJobs] = useState<Job[]>(() => {
+    const saved = localStorage.getItem('kl_jobs');
+    return saved ? JSON.parse(saved) : INITIAL_JOBS;
+  });
+
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const saved = localStorage.getItem('kl_tasks');
+    return saved ? JSON.parse(saved) : INITIAL_TASKS;
+  });
+
+  const [financials, setFinancials] = useState<FinancialRecord[]>(() => {
+    const saved = localStorage.getItem('kl_financials');
+    return saved ? JSON.parse(saved) : INITIAL_FINANCIALS;
+  });
+
+  const [files, setFiles] = useState<VaultFile[]>(() => {
+    const saved = localStorage.getItem('kl_files');
+    return saved ? JSON.parse(saved) : INITIAL_FILES;
+  });
+
+  const [notes, setNotes] = useState<JobNote[]>(() => {
+    const saved = localStorage.getItem('kl_notes');
+    return saved ? JSON.parse(saved) : INITIAL_NOTES;
+  });
+
+  // --- View states ---
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('workflow');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Lead' | 'Production' | 'Complete'>('All');
+  const [showAddJobModal, setShowAddJobModal] = useState<boolean>(false);
+  const [automationAlert, setAutomationAlert] = useState<string | null>(null);
+  const [drilldownType, setDrilldownType] = useState<'jobs' | 'tasks' | null>(null);
+  const [activeDatabaseMode, setActiveDatabaseMode] = useState<'demo' | 'live'>(() => {
+    const saved = localStorage.getItem('kl_db_mode');
+    return (saved as 'demo' | 'live') || 'demo';
+  });
+  const [showUserGuide, setShowUserGuide] = useState<boolean>(false);
+  const [isSleekTheme, setIsSleekTheme] = useState<boolean>(() => {
+    const saved = localStorage.getItem('kl_sleek_theme');
+    return saved ? JSON.parse(saved) : true;
+  });
+  // Sync to localstorage
+  useEffect(() => {
+    localStorage.setItem('kl_db_mode', activeDatabaseMode);
+  }, [activeDatabaseMode]);
+  useEffect(() => {
+    localStorage.setItem('kl_sleek_theme', JSON.stringify(isSleekTheme));
+  }, [isSleekTheme]);
+  useEffect(() => {
+    localStorage.setItem('kl_jobs', JSON.stringify(jobs));
+  }, [jobs]);
+
+  useEffect(() => {
+    localStorage.setItem('kl_tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem('kl_financials', JSON.stringify(financials));
+  }, [financials]);
+
+  useEffect(() => {
+    localStorage.setItem('kl_files', JSON.stringify(files));
+  }, [files]);
+
+  useEffect(() => {
+    localStorage.setItem('kl_notes', JSON.stringify(notes));
+  }, [notes]);
+
+  // --- Helper calculations ---
+  const getTasksOutstandingCount = (jobId: string) => {
+    const STATUS_STAGES: Record<string, string> = {
+      '1 First Contact': 'Lead Care',
+      '2 Qualifying Lead': 'Lead Care',
+      '3 Site Visit Scheduled': 'Lead Care',
+      '4 Site Visit Done': 'Lead Care',
+      '5 Design Phase': 'Design',
+      '6 Quote Sent': 'Design',
+      '7 Awaiting Deposit': 'Financials',
+      '8 Deposit Paid': 'Financials',
+      '9 Production': 'Production',
+      '10 Installation Scheduled': 'Installation',
+      '11 Installation In Progress': 'Installation',
+      '12 Complete': 'Handover'
+    };
+
+    const job = jobs.find((j) => j.id === jobId);
+    if (!job) return 0;
+    const stage = STATUS_STAGES[job.status] || 'Production';
+
+    return tasks.filter(
+      (t) => t.jobId === jobId && t.stage.toLowerCase() === stage.toLowerCase() && !t.complete
+    ).length;
+  };
+
+  // State calculations for header KPI metrics
+  const activeJobs = jobs.filter((j) => j.status !== '12 Complete');
+  const totalTasksOpen = activeJobs.reduce((sum, j) => sum + getTasksOutstandingCount(j.id), 0);
+  const totalContractPipeline = jobs
+    .filter((j) => j.status !== '12 Complete')
+    .reduce((sum, j) => sum + j.quoteValue, 0);
+  const alertProjectsCount = jobs.filter(
+    (j) => j.health === 'Needs Attention' || j.health === 'At Risk'
+  ).length;
+
+  // Find dynamic alerts for the home banner cards
+  const awaitingDepositJob = jobs.find((j) => j.status === '7 Awaiting Deposit');
+  const attentionJob = jobs.find((j) => j.id !== 'OVERHEAD' && (j.health === 'Needs Attention' || j.health === 'At Risk'));
+
+  // Find active job details
+  const currentJob = jobs.find((j) => j.id === selectedJobId);
+
+  // --- Handlers & Mutator Actions ---
+
+  const handleSeedDemoData = (
+    newJobs: Job[],
+    newTasks: Task[],
+    newFinancials: FinancialRecord[],
+    newFiles: VaultFile[],
+    newNotes: JobNote[]
+  ) => {
+    setJobs(newJobs);
+    setTasks(newTasks);
+    setFinancials(newFinancials);
+    setFiles(newFiles);
+    setNotes(newNotes);
+    setSelectedJobId(null);
+  };
+
+  const handleResetCleanState = () => {
+    setJobs([]);
+    setTasks([]);
+    setFinancials([]);
+    setFiles([]);
+    setNotes([]);
+    setSelectedJobId(null);
+  };
+
+  const handleUpdateJobStatus = (jobId: string, newStatus: JobStatus) => {
+    setJobs((prevJobs) =>
+      prevJobs.map((j) => {
+        if (j.id === jobId) {
+          // Record change in statusSince
+          return { ...j, status: newStatus, statusSince: new Date().toISOString() };
+        }
+        return j;
+      })
+    );
+
+    // Auto-message for visual feedback
+    triggerAutomationNotification(`Status advanced to "${newStatus.substring(2)}" for project!`);
+  };
+
+  const handleToggleTask = (taskId: string) => {
+    let affectedJobId = '';
+    setTasks((prevTasks) =>
+      prevTasks.map((t) => {
+        if (t.id === taskId) {
+          affectedJobId = t.jobId;
+          const nextState = !t.complete;
+
+          // SPECIAL AUTOMATION: If "60% Production Deposit Received" is ticked complete
+          // We trigger depositPaid set if it is currently 0, and suggest moving status!
+          if (t.taskName.includes('60%') && nextState) {
+            setTimeout(() => {
+              handleTriggerDepositAutomation(t.jobId);
+            }, 100);
+          }
+
+          return { ...t, complete: nextState };
+        }
+        return t;
+      })
+    );
+  };
+
+  const handleTriggerDepositAutomation = (jobId: string) => {
+    setJobs((prevJobs) =>
+      prevJobs.map((j) => {
+        if (j.id === jobId) {
+          const targetDeposit = j.quoteValue * 0.6;
+          // Set depositReceived to exactly 60% if it is currently 0
+          const updatedDeposit = j.depositReceived < targetDeposit ? targetDeposit : j.depositReceived;
+          
+          triggerAutomationNotification(
+            `⚡ Automation Triggered: 60% Deposit Paid! status elevated to "8 Deposit Paid" & Project becomes Active.`
+          );
+
+          return {
+            ...j,
+            depositReceived: updatedDeposit,
+            status: '8 Deposit Paid' as JobStatus,
+            statusSince: new Date().toISOString()
+          };
+        }
+        return j;
+      })
+    );
+  };
+
+  const handleAddTask = (jobId: string, taskName: string, stage: string) => {
+    const newTask: Task = {
+      id: `T_CUST_${Date.now()}`,
+      jobId: jobId,
+      stage: stage,
+      taskName: taskName,
+      complete: false
+    };
+    setTasks((prev) => [...prev, newTask]);
+    triggerAutomationNotification(`Bespoke task "${taskName}" inserted into active stage queue.`);
+  };
+
+  const handleUpdateSpecs = (jobId: string, updatedSpecs: any) => {
+    setJobs((prevJobs) =>
+      prevJobs.map((j) => {
+        if (j.id === jobId) {
+          return { ...j, specs: updatedSpecs };
+        }
+        return j;
+      })
+    );
+  };
+
+  const handleAddFile = (newFile: Omit<VaultFile, 'id' | 'uploadedAt'>) => {
+    const appended: VaultFile = {
+      ...newFile,
+      id: `V_${Date.now()}`,
+      uploadedAt: new Date().toISOString()
+    };
+    setFiles((prev) => [appended, ...prev]);
+    triggerAutomationNotification(`File "${newFile.name}" pinned securely inside Visual Vault.`);
+  };
+
+  const handleDeleteFile = (fileId: string) => {
+    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+  };
+
+  const handleAddTransaction = (newTx: Omit<FinancialRecord, 'id' | 'date'>) => {
+    const txDate = new Date().toISOString().split('T')[0];
+    const logged: FinancialRecord = {
+      ...newTx,
+      id: `F_${Date.now()}`,
+      date: txDate
+    };
+    setFinancials((prev) => [logged, ...prev]);
+
+    // Check for 60% deposit trigger: if client just paid something that brings total payments >= 60%
+    if (newTx.type === 'payment') {
+      const job = jobs.find((j) => j.id === newTx.jobId);
+      if (job) {
+        const existingPayments = financials
+          .filter((f) => f.jobId === job.id && f.type === 'payment')
+          .reduce((sum, f) => sum + f.amount, 0);
+        const newTotal = existingPayments + job.depositReceived + newTx.amount;
+        if (newTotal >= job.quoteValue * 0.6 && job.status !== '8 Deposit Paid' && job.status !== '9 Production') {
+          // auto elevate status
+          setTimeout(() => {
+            handleUpdateJobStatus(job.id, '8 Deposit Paid');
+          }, 400);
+        }
+      }
+    }
+  };
+
+  const handleAddNote = (jobId: string, content: string, author: string) => {
+    const newNoteRecord: JobNote = {
+      id: `N_${Date.now()}`,
+      jobId: jobId,
+      author: author,
+      content: content,
+      createdAt: new Date().toISOString()
+    };
+    setNotes((prev) => [newNoteRecord, ...prev]);
+  };
+
+  const handleUpdateJobState = (jobId: string, updatedFields: Partial<Job>) => {
+    setJobs((prevJobs) =>
+      prevJobs.map((j) => {
+        if (j.id === jobId) {
+          return { ...j, ...updatedFields };
+        }
+        return j;
+      })
+    );
+  };
+
+  const handleCreateNewJob = (newJobData: any) => {
+    const newJob: Job = {
+      ...newJobData,
+      statusSince: new Date().toISOString()
+    };
+
+    setJobs((prev) => [...prev, newJob]);
+
+    // Generate beautiful list of starting template tasks for the new job
+    const defaultChecklist: Task[] = [
+      { id: `T_${newJob.id}_1`, jobId: newJob.id, stage: 'Design', taskName: 'Wishlist Captured & Functional Brief Drafted', complete: true },
+      { id: `T_${newJob.id}_2`, jobId: newJob.id, stage: 'Design', taskName: 'Detailed Laser Site Measurement Completed', complete: false },
+      { id: `T_${newJob.id}_3`, jobId: newJob.id, stage: 'Design', taskName: 'Initial Layout Drafts & Ergonomics Approval', complete: false },
+      { id: `T_${newJob.id}_4`, jobId: newJob.id, stage: 'Design', taskName: '3D High-Fidelity Rendering Presentation', complete: false },
+      { id: `T_${newJob.id}_5`, jobId: newJob.id, stage: 'Design', taskName: 'Material Sample Board & Finishes Signed Off', complete: false },
+      { id: `T_${newJob.id}_6`, jobId: newJob.id, stage: 'Financials', taskName: 'Comprehensive Itemized Quotation Sent', complete: false },
+      { id: `T_${newJob.id}_7`, jobId: newJob.id, stage: 'Financials', taskName: '60% Production Deposit Settle check', complete: false },
+      { id: `T_${newJob.id}_8`, jobId: newJob.id, stage: 'Production', taskName: 'Final Millimetre-Perfect Technical Site Review', complete: false },
+      { id: `T_${newJob.id}_9`, jobId: newJob.id, stage: 'Production', taskName: 'Cabinet Craftsmanship Cutting List Generated', complete: false },
+      { id: `T_${newJob.id}_10`, jobId: newJob.id, stage: 'Production', taskName: 'Raw Boards & Sheet Materials Ordered', complete: false },
+      { id: `T_${newJob.id}_11`, jobId: newJob.id, stage: 'Production', taskName: 'Premium Hardware Sourced', complete: false }
+    ];
+
+    setTasks((prev) => [...prev, ...defaultChecklist]);
+    setShowAddJobModal(false);
+    setSelectedJobId(newJob.id); // instantly navigate there!
+    triggerAutomationNotification(`Project passport ${newJob.id} generated with 11 core tracking tasks.`);
+  };
+
+  const triggerAutomationNotification = (msg: string) => {
+    setAutomationAlert(msg);
+    setTimeout(() => {
+      setAutomationAlert(null);
+    }, 4500);
+  };
+
+  // --- Filtering list logic ---
+  const filteredJobs = jobs.filter((j) => {
+    // Search filter
+    const matchesSearch =
+      j.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      j.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      j.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      j.status.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Status category filters
+    if (statusFilter === 'All') return matchesSearch;
+    if (statusFilter === 'Active') {
+      return matchesSearch && j.status !== '12 Complete' && j.status !== '1 First Contact';
+    }
+    if (statusFilter === 'Lead') {
+      return (
+        matchesSearch &&
+        (j.status.includes('1 ') ||
+          j.status.includes('2 ') ||
+          j.status.includes('3 ') ||
+          j.status.includes('4 '))
+      );
+    }
+    if (statusFilter === 'Production') {
+      return matchesSearch && j.status.includes('9 ');
+    }
+    if (statusFilter === 'Complete') {
+      return matchesSearch && j.status.includes('12 ');
+    }
+    return matchesSearch;
+  });
+
+  return (
+    <div className={`min-h-screen ${isSleekTheme ? 'bg-[#090b11] text-slate-100' : 'bg-[#f8fafc] text-slate-800'} font-sans antialiased pb-16 transition-colors duration-300`}>
+      
+      {/* Top Brand Banner */}
+      <header className="bg-slate-950 text-white border-b border-slate-900 sticky top-0 z-30 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between font-sans">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center font-extrabold text-lg select-none shadow-md shadow-white/5 border border-slate-200">
+              <span className="text-red-600 font-extrabold">K</span>
+              <span className="text-slate-950 font-extrabold font-sans">L</span>
+            </div>
+            <div>
+              <h1 className="text-md sm:text-lg font-sans font-extrabold tracking-tight text-white flex items-center gap-1.5">
+                Kitchen Lab OS
+                <span className="text-[9px] bg-indigo-500 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-widest leading-none">V2.2 PREMIUM</span>
+              </h1>
+              <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider font-sans">
+                Premium Craftsman Master Dashboard
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              id="theme-toggle-btn"
+              onClick={() => setIsSleekTheme(!isSleekTheme)}
+              className={`text-xs px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 font-bold transition-all cursor-pointer border ${
+                isSleekTheme
+                  ? 'bg-indigo-950/40 text-indigo-300 border-indigo-700/40 hover:bg-indigo-950/80'
+                  : 'bg-slate-800 text-slate-200 border-transparent hover:bg-slate-700'
+              }`}
+            >
+              {isSleekTheme ? '🔳 Minimalist Chalk' : '🖤 Sleek Carbon'}
+            </button>
+            <span className="text-xs bg-slate-800 px-3 py-1.5 rounded-lg text-slate-300 font-medium hidden sm:inline">
+              👤 David (Admin)
+            </span>
+            <button
+              id="top-add-job-btn"
+              onClick={() => setShowAddJobModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-xs font-bold text-white px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 cursor-pointer select-none font-sans"
+            >
+              <PlusCircle className="h-4 w-4" />
+              New Project
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Sync Pipeline Bar */}
+      <section className="bg-slate-900 text-slate-300 py-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between text-[11px] font-medium py-1">
+            <div className="flex items-center gap-1.5 text-indigo-400 font-sans">
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+              Kitchen Lab OS • Offline-First Master Database Active
+            </div>
+            <div className="text-slate-500 hidden md:block font-sans">
+              AppSheet Client Interface Connected • (Upgrade to ERP/Report Layer available)
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SYSTEM DATABASE ENVIRONMENT & MANUAL BAR */}
+      <section className={`border-b ${isSleekTheme ? 'bg-slate-950 border-slate-900 text-slate-100' : 'bg-white border-slate-150 text-slate-850'} py-3 transition-colors duration-300`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest font-mono shrink-0">
+              ACTIVE ENVIRONMENT:
+            </span>
+            <div className="flex bg-slate-900 text-white p-1 rounded-xl border border-slate-850 shrink-0 select-none">
+              <button
+                id="env-demo-mode-btn"
+                onClick={() => {
+                  handleSeedDemoData(
+                    getSevenDemoClients(),
+                    getSevenDemoTasks(),
+                    getSevenDemoFinancials(),
+                    getSevenDemoFiles(),
+                    getSevenDemoNotes()
+                  );
+                  setActiveDatabaseMode('demo');
+                  triggerAutomationNotification("🚀 Populated exactly 7 Demo Clients in various workflow stages!");
+                }}
+                className={`text-xs px-3.5 py-1.5 rounded-lg font-sans font-extrabold cursor-pointer transition-all flex items-center gap-1.5 ${
+                  activeDatabaseMode === 'demo'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-slate-450 hover:text-slate-205'
+                }`}
+              >
+                📊 7-Client Demo Sandbox
+              </button>
+              <button
+                id="env-live-mode-btn"
+                onClick={() => {
+                  handleResetCleanState();
+                  setActiveDatabaseMode('live');
+                  triggerAutomationNotification("🧹 Reset to absolute zero blank active workspace (BuildCore)!");
+                }}
+                className={`text-xs px-3.5 py-1.5 rounded-lg font-sans font-extrabold cursor-pointer transition-all flex items-center gap-1.5 ${
+                  activeDatabaseMode === 'live'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-slate-450 hover:text-slate-205'
+                }`}
+              >
+                🧹 Live BuildCore (Blank Slate)
+              </button>
+            </div>
+            
+            {/* Environment Status Pill */}
+            <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg self-start sm:self-center shrink-0 ${
+              activeDatabaseMode === 'demo'
+                ? 'bg-amber-950/40 text-amber-400 border border-amber-900/40'
+                : 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40'
+            }`}>
+              {activeDatabaseMode === 'demo' ? '📝 DEMO MODE ACTIVE' : '⚡ LIVE WORKSPACE ACTIVE'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 self-end md:self-center">
+            <button
+              id="toggle-user-guide-btn"
+              onClick={() => setShowUserGuide(!showUserGuide)}
+              className={`text-xs px-4 py-1.5 rounded-xl font-bold flex items-center gap-1.5 select-none cursor-pointer transition-all border ${
+                showUserGuide
+                  ? 'bg-slate-850 text-indigo-400 border-indigo-500/30'
+                  : 'bg-indigo-950/30 text-indigo-300 border-indigo-900/40 hover:bg-indigo-950/60'
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              {showUserGuide ? 'Hide User Manual' : '📖 Open User Manual'}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* USER & WORKSHOP MANUAL */}
+      <AnimatePresence>
+        {showUserGuide && (
+          <motion.section
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className={`overflow-hidden border-b transition-colors duration-300 ${
+              isSleekTheme ? 'bg-slate-900/40 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-850'
+            }`}
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+              <div className="flex items-start justify-between border-b border-slate-800/40 pb-3 mb-4">
+                <div>
+                  <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                    <BookOpen className="h-4.5 w-4.5" />
+                    Kitchen Lab OS • Operational Handbook
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    How David and the site installation crew operate on location using this system.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowUserGuide(false)}
+                  className="text-xs text-slate-400 hover:text-slate-200 uppercase font-mono font-bold"
+                >
+                  ✕ Close Manual
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Manual Section 1 */}
+                <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
+                  <div className="flex items-center gap-2 text-indigo-400">
+                    <Smartphone className="h-4.5 w-4.5" />
+                    <h3 className="text-xs font-bold uppercase font-sans tracking-wide">1. Loading onto your Phone</h3>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    You don't need any app stores! 
+                    <br />
+                    1. Tap the <strong className="text-slate-350">Share App URL</strong> option inside AI Studio, or open the link on your phone.
+                    <br />
+                    2. In Chrome (Android) or Safari (iPhone), tap the <strong className="text-indigo-400 font-extrabold">"Share" / "Menu"</strong> button.
+                    <br />
+                    3. Choose <strong className="text-indigo-400 font-extrabold">"Add to Home Screen"</strong>.
+                    <br />
+                    It places a standalone workspace launcher shortcut immediately onto your phone's home screen.
+                  </p>
+                </div>
+
+                {/* Manual Section 2 */}
+                <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
+                  <div className="flex items-center gap-2 text-indigo-400">
+                    <WifiOff className="h-4.5 w-4.5" />
+                    <h3 className="text-xs font-bold uppercase font-sans tracking-wide">2. Offline vs. Online Capabilities</h3>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    <strong>Absolute Offline:</strong> David can type, create clients, modify measurements, adjust door hinges, or log payments at client sites in remote, zero-reception areas. Key numbers are cached securely inside the phone's built-in LocalStorage database and never lost.
+                    <br />
+                    <strong>Online Mode:</strong> When cell signal restores, sending ERP/Report Layer setup requests or transferring data occurs with zero manual input or sync conflict.
+                  </p>
+                </div>
+
+                {/* Manual Section 3 */}
+                <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
+                  <div className="flex items-center gap-2 text-indigo-400">
+                    <Sliders className="h-4.5 w-4.5" />
+                    <h3 className="text-xs font-bold uppercase font-sans tracking-wide">3. Core Features to Showcase</h3>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    • <strong className="text-slate-300">Specifications Section:</strong> Keep track of soft-close hinges, board materials (Melawood, PG Bison), door types, and stone suppliers.
+                    <br />
+                    • <strong className="text-slate-300">Site-Notes Amendments:</strong> Correct wrong measurements or specific client requests (like Fatima’s secret drawer) instantly.
+                    <br />
+                    • <strong className="text-slate-300">Visual Vault:</strong> Preview active CAD drawings or 3D renderings to keep the cabinet-making team aligned.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
+      {/* --- Main Application Container Viewports --- */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        
+        {/* Dynamic System Notifications (Float alerts) */}
+        <AnimatePresence>
+          {automationAlert && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="mb-5 bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/25 text-white rounded-xl p-4 shadow-xl flex items-start gap-3 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 blur-xl rounded-full" />
+              <div className="h-6 w-6 rounded-full bg-indigo-500/25 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-xs">⚡</span>
+              </div>
+              <div>
+                <span className="font-extrabold text-sm block tracking-tight text-indigo-300">SYSTEM EVENT REGISTERED</span>
+                <span className="text-xs text-indigo-100 font-sans">{automationAlert}</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence mode="wait">
+          {!selectedJobId ? (
+            // ============================================
+            // MY JOBS HOME VIEW PORT
+            // ============================================
+            <motion.div
+              key="home"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6"
+            >
+              {/* OLD BROWSER CACHE RECOVERY TRIGGER */}
+              {jobs.length > 7 && (
+                <div className="bg-amber-950/20 border border-amber-500/20 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-amber-200">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl leading-none mt-0.5 animate-bounce">⚠️</span>
+                    <div>
+                      <span className="font-extrabold text-sm block text-amber-300">Previous Testing Cache Running ({jobs.length} Clients Detected)</span>
+                      <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                        Your browser is currently displaying the testing data cached from your previous session. 
+                        To immediately view the clean finished app versions: Click <strong>"📊 Load 7-Client Sandbox Demo"</strong> to test Gerard and Fatima's specs, or click <strong>"🧹 Wipe to Clean Workspace"</strong> to set up a blank slate for David's real work.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row bg-slate-900 border border-slate-800 p-1.5 rounded-xl shrink-0 gap-1.5 w-full md:w-auto">
+                    <button
+                      id="fix-to-demo-seeder-btn"
+                      onClick={() => {
+                        handleSeedDemoData(
+                          getSevenDemoClients(),
+                          getSevenDemoTasks(),
+                          getSevenDemoFinancials(),
+                          getSevenDemoFiles(),
+                          getSevenDemoNotes()
+                        );
+                        setActiveDatabaseMode('demo');
+                        triggerAutomationNotification("📊 Loaded exactly 7 Demo Clients in various stages!");
+                      }}
+                      className="text-xs px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-lg cursor-pointer transition-all shrink-0 text-center"
+                    >
+                      📊 Load 7-Client Demo
+                    </button>
+                    <button
+                      id="fix-to-clean-slate-btn"
+                      onClick={() => {
+                        handleResetCleanState();
+                        setActiveDatabaseMode('live');
+                        triggerAutomationNotification("🧹 Empty Workspace Ready.");
+                      }}
+                      className="text-xs px-3.5 py-2 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-rose-400 font-bold rounded-lg cursor-pointer transition-all shrink-0 text-center border border-slate-800"
+                    >
+                      🧹 Wipe to Clean Workspace
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Core KPI metrics Row */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                {/* Metric 1 */}
+                <button
+                  id="inspect-crafting-pipeline-metric"
+                  onClick={() => setDrilldownType(drilldownType === 'jobs' ? null : 'jobs')}
+                  className={`text-left w-full cursor-pointer transition-all hover:scale-[1.015] active:scale-[0.985] rounded-2xl ${
+                    drilldownType === 'jobs'
+                      ? 'ring-2 ring-indigo-500 bg-[#161d36] border-transparent'
+                      : isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20 hover:border-indigo-500/50' : 'bg-white border border-gray-150 hover:border-indigo-400'
+                  } p-4 shadow-xs transition-colors duration-200`}
+                >
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans flex items-center justify-between">
+                    <span>Crafting Pipeline</span>
+                    <span className="text-[9px] text-indigo-400 uppercase font-bold tracking-tight">Inspect Who/What →</span>
+                  </div>
+                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-white' : 'text-slate-900'}`}>
+                    {activeJobs.length} Projects
+                  </div>
+                  <div className={`mt-1 flex items-center justify-between text-[11px] ${isSleekTheme ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <span>{jobs.filter(j => j.status === '12 Complete').length} Handed Over Complete</span>
+                  </div>
+                </button>
+
+                {/* Metric 2 */}
+                <button
+                  id="inspect-pending-tasks-metric"
+                  onClick={() => setDrilldownType(drilldownType === 'tasks' ? null : 'tasks')}
+                  className={`text-left w-full cursor-pointer transition-all hover:scale-[1.015] active:scale-[0.985] rounded-2xl ${
+                    drilldownType === 'tasks'
+                      ? 'ring-2 ring-indigo-500 bg-[#161d36] border-transparent'
+                      : isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20 hover:border-indigo-500/50' : 'bg-white border border-gray-150 hover:border-indigo-400'
+                  } p-4 shadow-xs transition-colors duration-200`}
+                >
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans flex items-center justify-between">
+                    <span>Action Checklist Rows</span>
+                    <span className="text-[9px] text-indigo-400 uppercase font-bold tracking-tight">Inspect Tasks →</span>
+                  </div>
+                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-indigo-400' : 'text-indigo-650'}`}>
+                    {totalTasksOpen} Open Tasks
+                  </div>
+                  <p className={`text-[11px] mt-1 truncate ${isSleekTheme ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Click to drill down into active checklist
+                  </p>
+                </button>
+
+                {/* Metric 3 */}
+                <div className={`${isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20' : 'bg-white border border-gray-150'} p-4 rounded-2xl shadow-xs transition-colors duration-200`}>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans">
+                    Pipeline Locked Valuation
+                  </div>
+                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-emerald-400' : 'text-slate-950'}`}>
+                    R{totalContractPipeline.toLocaleString()}
+                  </div>
+                  <p className={`text-[11px] mt-1 font-semibold ${isSleekTheme ? 'text-slate-450' : 'text-slate-500'}`}>
+                    Upgrade to ERP/Report Layer
+                  </p>
+                </div>
+
+                {/* Metric 4 */}
+                <div className={`${isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20' : 'bg-white border border-gray-150'} p-4 rounded-2xl shadow-xs transition-colors duration-200`}>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans">
+                    Project Health
+                  </div>
+                  <div className="text-2xl font-sans font-extrabold mt-1 flex items-center gap-2">
+                    {alertProjectsCount === 0 ? (
+                      <span className="text-emerald-500 text-lg">100% Healthy</span>
+                    ) : (
+                      <span className="text-amber-500 text-lg">{alertProjectsCount} Alerts Open</span>
+                    )}
+                  </div>
+                  <p className={`text-[11px] mt-1 ${isSleekTheme ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {alertProjectsCount === 0 ? 'Everything On Track' : 'Needs direct consultation focus'}
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Active Jobs / Tasks Drilldown Inspector */}
+              <AnimatePresence>
+                {drilldownType && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className={`overflow-hidden rounded-3xl border p-6 font-sans mb-6 relative ${
+                      isSleekTheme 
+                        ? 'bg-gradient-to-br from-[#12162a] via-[#111625] to-[#0a0c16] border-indigo-500/20' 
+                        : 'bg-[#f0f4f8] border-indigo-200'
+                    }`}
+                  >
+                    {/* Corner gradient glow */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-2xl rounded-full pointer-events-none" />
+                    
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/40">
+                      <div>
+                        <span className="text-[10px] bg-indigo-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+                          Live Metrics Inspector
+                        </span>
+                        <h3 className="text-lg font-sans font-extrabold mt-1">
+                          {drilldownType === 'jobs' 
+                            ? 'Who, What & Why: Active Crafting Pipeline' 
+                            : 'Who, What & Why: Pending Project Tasks'
+                          }
+                        </h3>
+                      </div>
+                      <button
+                        onClick={() => setDrilldownType(null)}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-bold border transition cursor-pointer select-none ${
+                          isSleekTheme 
+                            ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white' 
+                            : 'bg-white border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        ✕ Close Inspector
+                      </button>
+                    </div>
+
+                    {drilldownType === 'jobs' ? (
+                      /* Jobs Drilldown list */
+                      <div className="space-y-4 max-h-[380px] overflow-y-auto pr-2">
+                        {jobs.filter(j => j.status !== '12 Complete').map((job) => {
+                          const outstanding = getTasksOutstandingCount(job.id);
+                          return (
+                            <div 
+                              key={job.id}
+                              onClick={() => {
+                                setSelectedJobId(job.id);
+                                setActiveTab('workflow');
+                                setDrilldownType(null);
+                              }}
+                              className={`group p-4 rounded-2xl border transition-all hover:bg-slate-950/40 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                                isSleekTheme ? 'bg-[#151a2d] border-slate-800/80 hover:border-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-400'
+                              }`}
+                            >
+                              {/* WHO Column */}
+                              <div className="md:w-1/3 space-y-1">
+                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHO (Client Account)</div>
+                                <h4 className="text-sm font-extrabold text-slate-100">{job.clientName}</h4>
+                                <p className="text-xs text-slate-400">📍 Area Suburb: <strong className="text-slate-350">{job.area}</strong></p>
+                                <p className="text-[11px] text-slate-450 truncate">{job.phone} • {job.email}</p>
+                              </div>
+
+                              {/* WHAT Column */}
+                              <div className="md:w-1/3 space-y-1.5">
+                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHAT (Active Stage Door)</div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-slate-200">{job.status}</span>
+                                  <span className={`text-[9.5px] font-extrabold px-1.5 py-0.5 rounded ${outstanding > 0 ? 'bg-indigo-950 text-indigo-400' : 'bg-emerald-950 text-emerald-400'}`}>
+                                    {outstanding === 0 ? 'All secure' : `${outstanding} steps left`}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-455 truncate">
+                                  Specification Level: <strong className="text-slate-350">{job.specs.woodSpecies} • {job.specs.doorType}</strong>
+                                </p>
+                              </div>
+
+                              {/* WHY Column */}
+                              <div className="md:w-1/3 justify-between flex items-start gap-4">
+                                <div className="space-y-1">
+                                  <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHY (David Action Gate)</div>
+                                  <p className="text-[11px] text-slate-350 leading-snug line-clamp-2">
+                                    {job.comments || 'Active contract review is running alongside specifications.'}
+                                  </p>
+                                  {job.nextAction && (
+                                    <p className="text-[10px] text-indigo-400 font-bold">
+                                      Next step: ⚙️ {job.nextAction}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex flex-col items-end shrink-0 self-center">
+                                  <div className="text-[9px] text-slate-500 uppercase">Valuation</div>
+                                  <div className="text-xs font-mono font-extrabold text-slate-200">R{job.quoteValue.toLocaleString()}</div>
+                                  <div className="text-[9.5px] bg-indigo-600 hover:bg-indigo-505 text-white font-bold px-2 py-1 rounded-lg mt-1.5 group-hover:translate-x-1 duration-150">
+                                    Open →
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      /* Tasks Drilldown list */
+                      <div className="space-y-3 max-h-[380px] overflow-y-auto pr-2">
+                        {tasks.filter(t => !t.complete && jobs.some(j => j.id === t.jobId && j.status !== '12 Complete')).map((task) => {
+                          const job = jobs.find(j => j.id === task.jobId);
+                          return (
+                            <div 
+                              key={task.id}
+                              onClick={() => {
+                                if (job) {
+                                  setSelectedJobId(job.id);
+                                  setActiveTab('workflow');
+                                  setDrilldownType(null);
+                                }
+                              }}
+                              className={`group p-4 rounded-xl border transition-all hover:bg-slate-950/40 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                                isSleekTheme ? 'bg-[#151a2d] border-slate-800/80 hover:border-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-400'
+                              }`}
+                            >
+                              {/* WHO component */}
+                              <div className="md:w-1/3">
+                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHO (Active Contract client)</div>
+                                <h4 className="text-sm font-extrabold text-slate-100">{job?.clientName || 'Standalone'}</h4>
+                                <p className="text-[11px] text-slate-405">📍 Area Suburb: <strong className="text-slate-300">{job?.area || 'Universal'}</strong></p>
+                              </div>
+
+                              {/* WHAT task description */}
+                              <div className="md:w-1/3 space-y-1">
+                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHAT (Pending execution milestone)</div>
+                                <p className="text-xs font-bold text-slate-200 group-hover:text-indigo-400 transition-colors leading-snug">
+                                  {task.taskName}
+                                </p>
+                              </div>
+
+                              {/* WHY / ACTION info */}
+                              <div className="md:w-1/3 flex items-center justify-between gap-4">
+                                <div>
+                                  <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHY (Milestone context)</div>
+                                  <p className="text-[11px] text-slate-350 leading-snug">
+                                    Requires completion under stage gateway: <strong className="text-indigo-400">{task.stage}</strong>
+                                  </p>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <div className="text-[9.5px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded-lg group-hover:translate-x-1 duration-150">
+                                    Go To Checklist →
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* What needs attention banner section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Left Alert card: Attention Job or general health notification */}
+                {attentionJob ? (
+                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-200 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
+                    isSleekTheme
+                      ? 'bg-[#111625] border-slate-800/80 text-slate-100 shadow-slate-950/20 hover:border-amber-500/50'
+                      : 'bg-white border-gray-150 text-slate-800 hover:border-amber-400'
+                  }`}>
+                    {/* Colored top edge based on health */}
+                    <span className={`absolute top-0 inset-x-0 h-1.5 ${
+                      attentionJob.health === 'Needs Attention' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500 animate-pulse'
+                    }`} />
+
+                    <div>
+                      {/* Header badge */}
+                      <div className="flex justify-between items-start gap-1 mb-2">
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
+                          isSleekTheme ? 'bg-slate-900/80 text-amber-300 border-slate-800/50' : 'bg-amber-50 text-amber-700 border-amber-100'
+                        }`}>
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          ATTENTION REQUIRED
+                        </span>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          isSleekTheme ? 'bg-amber-950/80 text-amber-300 border border-amber-900/30' : 'bg-amber-100/80 text-amber-800'
+                        }`}>
+                          {attentionJob.health}
+                        </span>
+                      </div>
+
+                      {/* Title & metadata */}
+                      <h3 className={`text-md font-sans font-extrabold duration-150 ${isSleekTheme ? 'text-[#f1f5f9] group-hover/card:text-amber-300' : 'text-slate-900 group-hover/card:text-amber-700'}`}>
+                        {attentionJob.clientName}
+                      </h3>
+                      <p className="text-[11px] text-slate-450 font-medium font-sans flex items-center gap-1 mt-0.5">
+                        📍 {attentionJob.area} • Phase: {attentionJob.status.substring(2)}
+                      </p>
+
+                      {/* Comment */}
+                      <p className={`text-[11px] mt-2.5 leading-relaxed line-clamp-2 ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
+                        {attentionJob.comments || 'Ensure technical specifications and timelines are aligned.'}
+                      </p>
+                    </div>
+
+                    {/* Check In Action block */}
+                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
+                      <div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ACTION GATEWAY</span>
+                        <span className={`text-xs font-sans font-bold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-800'}`}>
+                          Specs Review
+                        </span>
+                      </div>
+                      <button
+                        id="attn-smith-btn"
+                        onClick={() => {
+                          setSelectedJobId(attentionJob.id);
+                          setActiveTab('specs');
+                        }}
+                        className={`cursor-pointer group/btn select-none font-extrabold text-xs px-4 py-2 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm ${
+                          isSleekTheme
+                            ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
+                            : 'bg-amber-650 hover:bg-amber-700 text-white'
+                        }`}
+                      >
+                        <span>Check In</span>
+                        <ArrowRight className="h-3.5 w-3.5 transform transition-transform duration-200 group-hover/btn:translate-x-1" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-200 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
+                    isSleekTheme
+                      ? 'bg-[#111625] border-slate-800/80 text-slate-100'
+                      : 'bg-white border-gray-150 text-slate-800'
+                  }`}>
+                    <span className="absolute top-0 inset-x-0 h-1.5 bg-emerald-500" />
+                    <div>
+                      <div className="flex justify-between items-start gap-1 mb-2">
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
+                          isSleekTheme ? 'bg-slate-900/80 text-emerald-350 border-slate-800/50' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                        }`}>
+                          <CheckCircle className="h-3.5 w-3.5" />
+                          SYSTEM COMPLIANT
+                        </span>
+                      </div>
+                      <h3 className={`text-md font-sans font-extrabold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'}`}>
+                        All Handshakes Operational
+                      </h3>
+                      <p className={`text-[11px] mt-2.5 leading-relaxed ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
+                        Active operations and installations are moving safely alongside targets with zero active alert incidents.
+                      </p>
+                    </div>
+                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-450 font-sans block">SLA INDEX</span>
+                      <span className="text-xs font-sans font-bold text-emerald-500">
+                        100% Healthy ✓
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Right Alert card: Awaiting Deposit or high value lead check */}
+                {awaitingDepositJob ? (
+                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-200 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
+                    isSleekTheme
+                      ? 'bg-[#111625] border-slate-800/80 text-slate-100 shadow-slate-950/20 hover:border-indigo-550/50'
+                      : 'bg-white border-gray-150 text-slate-800 hover:border-indigo-400'
+                  }`}>
+                    {/* Colored top edge based on health */}
+                    <span className="absolute top-0 inset-x-0 h-1.5 bg-indigo-500 animate-pulse" />
+
+                    <div>
+                      {/* Header badge */}
+                      <div className="flex justify-between items-start gap-1 mb-2">
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
+                          isSleekTheme ? 'bg-slate-900/80 text-[#818cf8] border-slate-800/50' : 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                        }`}>
+                          <Info className="h-3.5 w-3.5" />
+                          DEPOSIT CHECK
+                        </span>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          isSleekTheme ? 'bg-indigo-950/80 text-indigo-300 border border-indigo-900/30' : 'bg-indigo-100/80 text-indigo-800'
+                        }`}>
+                          Awaiting Payment
+                        </span>
+                      </div>
+
+                      {/* Title & valuation */}
+                      <h3 className={`text-md font-sans font-extrabold duration-155 ${isSleekTheme ? 'text-[#f1f5f9] group-hover:card:text-indigo-400' : 'text-slate-900 group-hover:card:text-indigo-655'}`}>
+                        {awaitingDepositJob.clientName}
+                      </h3>
+                      <p className="text-[11px] text-slate-450 font-medium font-sans flex items-center gap-1 mt-0.5">
+                        📍 {awaitingDepositJob.area} • Quotation Value: R{awaitingDepositJob.quoteValue.toLocaleString()}
+                      </p>
+
+                      {/* Info description */}
+                      <p className={`text-[11px] mt-2.5 leading-relaxed line-clamp-2 ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
+                        Currently locked in <strong>7 Awaiting Deposit</strong>. Verify booking deposit of 60% (R{(awaitingDepositJob.quoteValue * 0.6).toLocaleString()}) to release project to workshop fabrication.
+                      </p>
+                    </div>
+
+                    {/* Check In Action block */}
+                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
+                      <div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ESCROW MATURITY</span>
+                        <span className={`text-xs font-sans font-bold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-800'}`}>
+                          Funding Status
+                        </span>
+                      </div>
+                      <button
+                        id="attn-jones-btn"
+                        onClick={() => {
+                          setSelectedJobId(awaitingDepositJob.id);
+                          setActiveTab('financials');
+                        }}
+                        className={`cursor-pointer group/btn select-none font-extrabold text-xs px-4 py-2 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm ${
+                          isSleekTheme
+                            ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30'
+                            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                        }`}
+                      >
+                        <span>Check In</span>
+                        <ArrowRight className="h-3.5 w-3.5 transform transition-transform duration-200 group-hover/btn:translate-x-1" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-155 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
+                    isSleekTheme
+                      ? 'bg-[#111625] border-slate-800/80 text-slate-100'
+                      : 'bg-white border-gray-150 text-slate-800'
+                  }`}>
+                    <span className="absolute top-0 inset-x-0 h-1.5 bg-indigo-500" />
+                    <div>
+                      <div className="flex justify-between items-start gap-1 mb-2">
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
+                          isSleekTheme ? 'bg-slate-900/80 text-indigo-350 border-slate-800/50' : 'bg-indigo-50 text-indigo-750 border-indigo-100'
+                        }`}>
+                          <TrendingUp className="h-3.5 w-3.5 animate-pulse" />
+                          PIPELINE LOCKED
+                        </span>
+                      </div>
+                      <h3 className={`text-md font-sans font-extrabold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'}`}>
+                        Active Contract Revenue
+                      </h3>
+                      <p className={`text-[11px] mt-2.5 leading-relaxed ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
+                        Total contract pipeline contains R{totalContractPipeline.toLocaleString()} of active workspace opportunities. Settle payments and complete milestones to unlock payouts.
+                      </p>
+                    </div>
+                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-450 font-sans block">TOTAL SECURED</span>
+                      <span className="text-xs font-sans font-bold text-indigo-400">
+                        R{totalContractPipeline.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+
+              {/* Jobs section Header & Filter controls */}
+              <div className={`${isSleekTheme ? 'bg-[#111625] border border-slate-800/80' : 'bg-white border border-gray-150'} rounded-2xl p-5 shadow-xs space-y-4`}>
+                
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div>
+                    <h2 className={`text-lg font-sans font-extrabold tracking-tight ${isSleekTheme ? 'text-white' : 'text-gray-900'}`}>
+                      My Operations Dashboard
+                    </h2>
+                    <p className={`text-xs ${isSleekTheme ? 'text-slate-450' : 'text-slate-500'}`}>
+                      Open any project passport to access commands, specifications, work checklist, and client files.
+                    </p>
+                  </div>
+
+                  {/* Filter chips category row */}
+                  <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 pb-0 select-none">
+                    {([
+                      { key: 'All', label: 'All Jobs' },
+                      { key: 'Active', label: 'Active Workflow' },
+                      { key: 'Lead', label: 'Leads (Gateways 1-4)' },
+                      { key: 'Production', label: 'Production Queue' },
+                      { key: 'Complete', label: 'Settle Complete' }
+                    ] as const).map((chip) => (
+                      <button
+                        key={chip.key}
+                        id={`filter-job-status-chip-${chip.key}`}
+                        onClick={() => setStatusFilter(chip.key)}
+                        className={`text-[11px] font-bold px-3 py-1.5 rounded-lg shrink-0 cursor-pointer transition border ${
+                          statusFilter === chip.key
+                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
+                            : isSleekTheme
+                              ? 'bg-slate-900/60 hover:bg-slate-850 text-slate-350 border-slate-800'
+                              : 'bg-white hover:bg-gray-50 text-gray-500 border-gray-200'
+                        }`}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Search query block */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <input
+                    id="dashboard-search-input"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search master projects by client name, suburb / area, or active gate description..."
+                    className={`w-full text-xs font-sans border rounded-xl pl-9 pr-4 py-2.5 outline-none transition-all font-semibold ${
+                      isSleekTheme
+                        ? 'bg-slate-950 border-slate-850 text-white focus:bg-slate-950/90 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-950'
+                        : 'bg-slate-50 hover:bg-slate-100/50 focus:bg-white border-slate-200/80 text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-105'
+                    }`}
+                  />
+                </div>
+
+              </div>
+
+              {/* --- Core Active Operations Layout Engines --- */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredJobs.map((job) => {
+                    const outstandingCount = getTasksOutstandingCount(job.id);
+                    return (
+                      <div
+                        key={job.id}
+                        id={`job-card-${job.id}`}
+                        onClick={() => {
+                          setSelectedJobId(job.id);
+                          setActiveTab('workflow');
+                        }}
+                        className={`group border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
+                          isSleekTheme
+                            ? 'bg-[#111625] border-slate-800/80 hover:border-indigo-500 hover:shadow-indigo-950/20 text-slate-100'
+                            : 'bg-white border-gray-150 hover:border-indigo-400 text-slate-800'
+                        }`}
+                      >
+                        {/* Colored top edge based on health */}
+                        <span className={`absolute top-0 inset-x-0 h-1.5 ${
+                          job.health === 'On Track' ? 'bg-emerald-500' :
+                          job.health === 'Needs Attention' ? 'bg-amber-500' : 'bg-rose-500'
+                        }`} />
+
+                        <div>
+                          {/* Header metadata */}
+                          <div className="flex justify-between items-start gap-1 mb-2">
+                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                              isSleekTheme ? 'bg-slate-900/80 text-indigo-350 border-slate-800/50' : 'bg-slate-50 text-slate-400 border-gray-100'
+                            }`}>
+                              {job.id}
+                            </span>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                              job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border border-indigo-900/30' :
+                              job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border border-rose-900/30 font-semibold' :
+                              job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border border-amber-900/30' : 
+                              (isSleekTheme ? 'bg-slate-900 text-slate-300 border border-slate-800' : 'bg-slate-100 text-slate-600')
+                            }`}>
+                              {job.status}
+                            </span>
+                          </div>
+
+                          {/* Title client */}
+                          <h3 className={`text-md font-sans font-extrabold duration-150 ${isSleekTheme ? 'text-[#f1f5f9] group-hover:text-indigo-400' : 'text-slate-900 group-hover:text-indigo-600'}`}>
+                            {job.clientName}
+                          </h3>
+                          <p className="text-[11px] text-slate-400 font-medium font-sans flex items-center gap-1 mt-0.5">
+                            📍 {job.area}
+                          </p>
+
+                          {/* Description snippet */}
+                          <p className={`text-[11px] line-clamp-2 mt-2 leading-relaxed h-8 ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
+                            {job.comments}
+                          </p>
+                        </div>
+
+                        {/* Footer tracking block */}
+                        <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ACTIVE STATUS TASKS</span>
+                            <span className={`text-xs font-sans font-bold ${outstandingCount > 0 ? (isSleekTheme ? 'text-indigo-400' : 'text-indigo-600') : 'text-emerald-500'}`}>
+                              {outstandingCount === 0 ? 'All Completed ✓' : `${outstandingCount} Tasks Outstanding`}
+                            </span>
+                          </div>
+
+                          <div className="text-right">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">Quote Settle</span>
+                            <span className={`text-xs font-sans font-extrabold ${isSleekTheme ? 'text-[#f8fafc]' : 'text-gray-800'}`}>
+                              R{job.quoteValue.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {/* Layout Option 2: Bento Dashboard Layout (Retired) */}
+              {false && (() => {
+                const spotlightJob = filteredJobs.length > 0 
+                  ? [...filteredJobs].sort((a, b) => b.quoteValue - a.quoteValue)[0] 
+                  : null;
+                const bentoTasks = tasks
+                  .filter((t) => !t.complete && filteredJobs.some((j) => j.id === t.jobId))
+                  .slice(0, 4);
+
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
+                    
+                    {/* Big Spotlight Card */}
+                    {spotlightJob ? (
+                      <div className={`lg:col-span-2 rounded-3xl p-6 border relative overflow-hidden flex flex-col justify-between min-h-[290px] transition-all duration-300 ${
+                        isSleekTheme 
+                          ? 'bg-gradient-to-br from-[#12162a] to-[#0d0f1a] border-indigo-500/20 text-slate-100 shadow-indigo-950/20' 
+                          : 'bg-gradient-to-br from-indigo-50/70 to-white border-indigo-150 text-slate-800'
+                      }`}>
+                        <div className="absolute top-0 right-0 p-4">
+                          <span className="flex h-3.5 w-3.5 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-indigo-500"></span>
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] bg-indigo-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+                              HIGH VALUE STRATEGIC SPOTLIGHT
+                            </span>
+                            <span className="text-xs text-indigo-400 font-mono font-bold">#{spotlightJob.id}</span>
+                          </div>
+                          <div>
+                            <h3 className={`text-2xl font-sans font-extrabold tracking-tight ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'}`}>
+                              {spotlightJob.clientName}
+                            </h3>
+                            <p className="text-xs text-slate-400 font-medium font-sans mt-0.5">
+                              📍 Location Suburb: <strong className="text-indigo-400">{spotlightJob.area}</strong> • Phase: <strong className="text-indigo-400">{spotlightJob.status}</strong>
+                            </p>
+                          </div>
+                          <p className={`text-xs leading-relaxed max-w-xl ${isSleekTheme ? 'text-slate-350' : 'text-slate-600'}`}>
+                            {spotlightJob.comments || 'Master cabinet layout brief features custom storage configurations and detailed laser structural integrations.'}
+                          </p>
+                          
+                          {/* Inline tracking bar */}
+                          <div className="space-y-1.5 pt-2">
+                            <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                              <span>Milestone Booking Deposit Secure Check</span>
+                              <span className="text-indigo-400 font-mono">{((spotlightJob.depositReceived / spotlightJob.quoteValue) * 100).toFixed(0)}% Secured</span>
+                            </div>
+                            <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-slate-700/50">
+                              <div 
+                                className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full transition-all duration-500" 
+                                style={{ width: `${Math.min(100, (spotlightJob.depositReceived / spotlightJob.quoteValue) * 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={`pt-4 border-t mt-5 flex sm:flex-row flex-col sm:items-center justify-between gap-3 ${isSleekTheme ? 'border-slate-805' : 'border-gray-150'}`}>
+                          <div className="flex items-center gap-5">
+                            <div>
+                              <span className="text-[9px] uppercase font-bold text-slate-450 block font-sans">VALUATION LOCK</span>
+                              <span className={`text-lg font-extrabold ${isSleekTheme ? 'text-white' : 'text-slate-950'}`}>
+                                R{spotlightJob.quoteValue.toLocaleString()}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] uppercase font-bold text-slate-450 block font-sans">PROJECT HEALTH</span>
+                              <span className={`text-xs font-bold ${
+                                spotlightJob.health === 'On Track' ? 'text-emerald-400' :
+                                spotlightJob.health === 'Needs Attention' ? 'text-amber-450' : 'text-rose-400'
+                              }`}>
+                                ● {spotlightJob.health}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            id={`spotlight-panel-open-${spotlightJob.id}`}
+                            onClick={() => {
+                              setSelectedJobId(spotlightJob.id);
+                              setActiveTab('workflow');
+                            }}
+                            className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold text-[11px] px-4 py-2 rounded-xl transition cursor-pointer select-none flex items-center justify-center gap-1.5 self-end sm:self-auto"
+                          >
+                            <span>Open Master Passport</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="lg:col-span-2 text-center p-12 text-slate-450 bg-slate-900/30 rounded-3xl border border-slate-800/60 flex items-center justify-center">
+                        No spotlight kitchen projects matching search tags
+                      </div>
+                    )}
+
+                    {/* Bento Column 2 Widget: Visual Progress Indicator */}
+                    <div className={`p-5 rounded-3xl border flex flex-col justify-between ${
+                      isSleekTheme ? 'bg-[#111625] border-slate-800/80 text-white' : 'bg-white border-gray-150 text-gray-800'
+                    }`}>
+                      <div>
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1.5 font-sans">
+                          <Clock className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
+                          OPERATIONS TELEMETRY
+                        </h4>
+                        <h3 className="text-md sm:text-lg font-sans font-extrabold tracking-tight">Gate Compliance Lock</h3>
+                        <p className="text-xs text-slate-400 mt-1 leading-snug">System metrics monitoring active pipeline handshakes.</p>
+                        
+                        <div className="space-y-2.5 mt-5">
+                          <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-850 flex items-center justify-between">
+                            <span className="text-xs text-slate-350 font-medium">Crafting Queue</span>
+                            <span className="text-xs font-bold text-indigo-400 font-mono">{activeJobs.length} Projects</span>
+                          </div>
+                          <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-850 flex items-center justify-between">
+                            <span className="text-xs text-slate-350 font-medium">Active Revenue Locked</span>
+                            <span className="text-xs font-bold text-emerald-450 font-mono">R{totalContractPipeline.toLocaleString()}</span>
+                          </div>
+                          <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-850 flex items-center justify-between">
+                            <span className="text-xs text-slate-350 font-medium">Out-of-SLA Incidents</span>
+                            <span className={`text-xs font-bold font-mono ${alertProjectsCount > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                              {alertProjectsCount} Active Alert
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-800/50 mt-4 flex items-center justify-between text-[10px] font-mono text-slate-500">
+                        <span>ERP Reporting Suite Add-on available</span>
+                        <span className="text-amber-400 font-extrabold bg-amber-900/20 px-1.5 py-0.5 rounded uppercase">Upgrade Ready</span>
+                      </div>
+                    </div>
+
+                    {/* Bento Column 3 Widget: Micro outstanding tasks list */}
+                    <div className={`p-5 rounded-3xl border flex flex-col justify-between ${
+                      isSleekTheme ? 'bg-[#111625] border-slate-800/80 text-white' : 'bg-white border-gray-150 text-gray-800'
+                    }`}>
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-sans">
+                            PENDING CONSOLE STEPS
+                          </h4>
+                          <span className="text-[9px] bg-slate-900 text-indigo-300 border border-slate-800 px-2 py-0.5 rounded">
+                            QUICK ACTION
+                          </span>
+                        </div>
+                        <h3 className="text-md sm:text-lg font-sans font-extrabold tracking-tight">Milestone Checklist</h3>
+                        <p className="text-xs text-slate-400 mt-1 leading-snug">Tap actions here to immediately register completion.</p>
+
+                        <div className="space-y-2 mt-4 max-h-[160px] overflow-y-auto pr-1">
+                          {bentoTasks.length > 0 ? (
+                            bentoTasks.map((t) => {
+                              const correspondingJob = jobs.find((j) => j.id === t.jobId);
+                              return (
+                                <div 
+                                  key={t.id} 
+                                  onClick={() => handleToggleTask(t.id)}
+                                  className="group p-2.5 bg-slate-950/50 hover:bg-slate-950 hover:border-slate-700 rounded-xl border border-slate-850 transition cursor-pointer flex items-start gap-2 max-w-full"
+                                >
+                                  <input 
+                                    type="checkbox" 
+                                    checked={false} 
+                                    readOnly 
+                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0 shrink-0 h-3.5 w-3.5 cursor-pointer"
+                                  />
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] font-bold text-slate-200 truncate group-hover:text-indigo-405 transition-colors leading-tight">
+                                      {t.taskName}
+                                    </p>
+                                    <span className="text-[9px] text-[#818cf8] font-mono block leading-none mt-0.5">
+                                      {correspondingJob?.clientName || 'Project'} • {t.stage}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-center py-8 text-xs text-slate-450 border border-dashed border-slate-800 rounded-xl">
+                              All filtered process checklist steps complete! ✔
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-800/50 mt-4 text-center">
+                        <span className="text-[9px] text-slate-500 block">System auto-triggers status movements when 60% is reached.</span>
+                      </div>
+                    </div>
+
+                    {/* Micro-cards below */}
+                    <div className="lg:col-span-3 space-y-3 pt-2">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-[10px] font-bold text-[#818cf8] uppercase tracking-widest font-sans">
+                          OTHER JOBS IN WORKSPACE ({filteredJobs.length})
+                        </h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {filteredJobs.map((job) => {
+                          const outstanding = getTasksOutstandingCount(job.id);
+                          return (
+                            <div 
+                              key={job.id}
+                              onClick={() => {
+                                setSelectedJobId(job.id);
+                                setActiveTab('workflow');
+                              }}
+                              className={`p-4 border rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[110px] ${
+                                isSleekTheme 
+                                  ? 'bg-[#121625] border-slate-800/80 hover:border-indigo-500 text-slate-100 shadow-3xs' 
+                                  : 'bg-white border-gray-150 hover:border-indigo-400 text-slate-850'
+                              }`}
+                            >
+                              <div>
+                                <div className="flex justify-between text-[9px] text-slate-450 font-mono">
+                                  <span>#{job.id}</span>
+                                  <span>📍 {job.area}</span>
+                                </div>
+                                <h4 className="text-xs font-extrabold truncate mt-1">{job.clientName}</h4>
+                              </div>
+                              <div className="flex items-center justify-between border-t border-slate-800/40 pt-2 mt-2 font-sans">
+                                <span className="text-[10px] font-semibold text-emerald-450 font-mono">R{job.quoteValue.toLocaleString()}</span>
+                                <span className={`text-[8.5px] font-extrabold px-1.5 py-0.5 rounded leading-none ${
+                                  outstanding === 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400'
+                                }`}>
+                                  {outstanding === 0 ? 'DONE ✓' : `${outstanding} PENDING`}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })()}
+
+              {/* Layout Option 3: Professional Dense Spreadsheet Grid (Retired) */}
+              {false && (
+                <div className={`overflow-x-auto border rounded-2xl shadow-sm ${
+                  isSleekTheme ? 'bg-[#111625] border-slate-800/80 text-white shadow-slate-950/20' : 'bg-white border-gray-150 text-slate-800'
+                }`}>
+                  <table className="w-full text-left border-collapse font-sans text-xs select-none">
+                    <thead className={`text-[10px] font-bold uppercase tracking-widest border-b ${
+                      isSleekTheme ? 'bg-slate-950 text-slate-450 border-slate-850' : 'bg-slate-50 text-slate-500 border-gray-150'
+                    }`}>
+                      <tr>
+                        <th className="py-3 px-4 font-mono">Project ID</th>
+                        <th className="py-3 px-4">Master Client Name</th>
+                        <th className="py-3 px-4">Suburb area</th>
+                        <th className="py-3 px-4">Active Stage Gate</th>
+                        <th className="py-3 px-4">Milestone Health</th>
+                        <th className="py-3 px-4 text-right">Booking Deposit Secure</th>
+                        <th className="py-3 px-4 text-right">Quote Settle Value</th>
+                        <th className="py-3 px-4 text-center">Operational Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${isSleekTheme ? 'divide-slate-850' : 'divide-gray-150'}`}>
+                      {filteredJobs.map((job) => {
+                        const outstanding = getTasksOutstandingCount(job.id);
+                        const depositPct = job.quoteValue > 0 ? (job.depositReceived / job.quoteValue) * 100 : 0;
+                        const isOk = job.health === 'On Track';
+                        const isWarning = job.health === 'Needs Attention';
+
+                        return (
+                          <tr 
+                            key={job.id} 
+                            id={`table-row-${job.id}`}
+                            className={`hover:bg-indigo-500/5 transition cursor-pointer ${isSleekTheme ? 'hover:bg-slate-900/40' : 'hover:bg-slate-100/40'}`}
+                            onClick={() => {
+                              setSelectedJobId(job.id);
+                              setActiveTab('workflow');
+                            }}
+                          >
+                            <td className="py-3 px-4 font-mono font-bold text-indigo-400 text-xs">{job.id}</td>
+                            <td className="py-3 px-4 font-extrabold text-sm tracking-tight">{job.clientName}</td>
+                            <td className="py-3 px-4 text-slate-450 font-medium">📍 {job.area}</td>
+                            <td className="py-3 px-4">
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold inline-block border ${
+                                job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border-indigo-900/30' :
+                                job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border-rose-900/30' :
+                                job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border-amber-900/30' : 
+                                (isSleekTheme ? 'bg-slate-900 text-slate-300 border-slate-800' : 'bg-slate-100 text-slate-600 border-transparent')
+                              }`}>
+                                {job.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`inline-flex items-center gap-1.5 font-bold text-[10px] py-0.5 px-2 rounded-full border ${
+                                isOk ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15' :
+                                isWarning ? 'bg-amber-500/10 text-amber-400 border-amber-500/15' : 'bg-rose-500/10 text-rose-450 border-rose-500/15'
+                              }`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${isOk ? 'bg-emerald-500' : isWarning ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                                {job.health}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex flex-col items-end">
+                                <span className="font-mono text-emerald-400 font-bold text-xs">R{job.depositReceived.toLocaleString()}</span>
+                                <span className="text-[9px] text-slate-450 tracking-tight leading-none mt-0.5">{depositPct.toFixed(0)}% secure</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono font-bold text-xs">
+                              R{job.quoteValue.toLocaleString()}
+                            </td>
+                            <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                id={`row-open-btn-${job.id}`}
+                                onClick={() => {
+                                  setSelectedJobId(job.id);
+                                  setActiveTab('workflow');
+                                }}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-xl cursor-pointer shadow-3xs transition"
+                              >
+                                View Passport
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Layout Option 4: Process stage Kanban Boards Pipeline (Retired) */}
+              {false && (
+                <div className="flex gap-4 overflow-x-auto pb-4 select-none font-sans min-h-[460px] max-w-full">
+                  {([
+                    { title: '1. New Leads', color: 'border-slate-800/60 bg-slate-900/10', check: (j) => j.status.includes('1 ') || j.status.includes('2 ') || j.status.includes('3 ') || j.status.includes('4 ') },
+                    { title: '2. Design Briefing', color: 'border-rose-900/40 bg-rose-950/5', check: (j) => j.status.includes('5 ') || j.status.includes('6 ') },
+                    { title: '3. Awaiting Deposit', color: 'border-amber-900/40 bg-amber-950/5', check: (j) => j.status.includes('7 ') },
+                    { title: '4. Active Workspace', color: 'border-indigo-900/40 bg-indigo-950/5', check: (j) => j.status.includes('8 ') || j.status.includes('9 ') || j.status.includes('10 ') || j.status.includes('11 ') },
+                    { title: '5. Complete Handover', color: 'border-emerald-900/40 bg-emerald-950/5', check: (j) => j.status.includes('12 ') }
+                  ] as const).map((stage) => {
+                    const columnJobs = filteredJobs.filter(stage.check);
+                    return (
+                      <div 
+                        key={stage.title} 
+                        className={`flex-1 min-w-[270px] max-w-[310px] rounded-2xl border p-4 flex flex-col h-[525px] ${stage.color} ${isSleekTheme ? 'border-slate-800/80 bg-[#111625]/40' : 'border-gray-200 bg-slate-50/20'}`}
+                      >
+                        {/* Stage Column Header */}
+                        <div className="flex items-center justify-between mb-4 shrink-0 font-sans">
+                          <h3 className={`text-xs font-extrabold uppercase tracking-widest ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-800'}`}>
+                            {stage.title}
+                          </h3>
+                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${isSleekTheme ? 'bg-slate-905 text-indigo-400' : 'bg-slate-200 text-slate-800'}`}>
+                            {columnJobs.length}
+                          </span>
+                        </div>
+
+                        {/* Staged Cards container */}
+                        <div className="space-y-3 overflow-y-auto flex-1 pr-1">
+                          {columnJobs.map((job) => {
+                            const outstanding = getTasksOutstandingCount(job.id);
+                            return (
+                              <div
+                                key={job.id}
+                                id={`kanban-card-${job.id}`}
+                                onClick={() => {
+                                  setSelectedJobId(job.id);
+                                  setActiveTab('workflow');
+                                }}
+                                className={`group p-3 rounded-xl border hover:border-indigo-500 transition-all duration-155 cursor-pointer relative flex flex-col justify-between min-h-[120px] ${
+                                  isSleekTheme 
+                                    ? 'bg-[#121625] border-slate-805 text-slate-150 hover:shadow-lg hover:shadow-indigo-950/20' 
+                                    : 'bg-white border-gray-200 hover:border-indigo-400 text-slate-850'
+                                }`}
+                              >
+                                <span className={`absolute top-0 inset-x-0 h-1.5 rounded-t-xl ${
+                                  job.health === 'On Track' ? 'bg-emerald-500' :
+                                  job.health === 'Needs Attention' ? 'bg-amber-500' : 'bg-rose-500'
+                                }`} />
+                                
+                                <div className="space-y-1 mt-1 pt-1">
+                                  <div className="flex justify-between text-[9px] text-slate-450 font-mono">
+                                    <span>{job.id}</span>
+                                    <span>📍 {job.area}</span>
+                                  </div>
+                                  <h4 className={`text-xs font-extrabold tracking-tight truncate ${isSleekTheme ? 'text-white group-hover:text-indigo-405' : 'text-slate-905 group-hover:text-indigo-650'}`}>
+                                    {job.clientName}
+                                  </h4>
+                                </div>
+
+                                <div className="space-y-1.5 border-t border-slate-800/40 pt-2 mt-2 font-sans">
+                                  <div className="flex items-center justify-between text-[10px]">
+                                    <span className="text-slate-450">Deposit received:</span>
+                                    <span className="font-mono font-extrabold text-emerald-450">R{job.depositReceived.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-[10px]">
+                                    <span className="text-slate-450">Action steps:</span>
+                                    <span className={`font-bold ${outstanding === 0 ? 'text-emerald-400 animate-pulse' : 'text-indigo-400'}`}>
+                                      {outstanding === 0 ? 'All secure ✓' : `${outstanding} steps remaining`}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {columnJobs.length === 0 && (
+                            <div className="h-full border border-dashed border-slate-800/50 rounded-xl flex items-center justify-center p-8 text-center text-xs text-slate-500 leading-relaxed font-sans font-semibold">
+                              Empty column
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Empty State visual */}
+              {filteredJobs.length === 0 && (
+                <div className="bg-white border border-gray-150 rounded-2xl p-12 text-center shadow-2xs font-sans max-w-sm mx-auto">
+                  <AlertTriangle className="h-10 w-10 text-gray-300 mx-auto mb-2 animate-bounce" />
+                  <h3 className="font-sans font-extrabold text-gray-800 text-md">No Matching Project Found</h3>
+                  <p className="text-xs text-gray-400 max-w-sm mx-auto mt-1">
+                    Check your search spellings or filter tags. You can click 'New Project' in top header to add custom entries.
+                  </p>
+                </div>
+              )}
+
+              {/* Power BI Sync widget under jobs list visual */}
+              <div className="pt-6">
+                <PowerBiSync />
+              </div>
+
+            </motion.div>
+          ) : (
+            // ============================================
+            // OPEN JOB VIEW PORT (DEEP WORKSPACE COMMANDS)
+            // ============================================
+            <motion.div
+              key="details"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              
+              {/* Command Centre controlling health, status, next actions */}
+              <CommandCentre
+                job={currentJob!}
+                outstandingTasksCount={getTasksOutstandingCount(currentJob!.id)}
+                onGoBack={() => setSelectedJobId(null)}
+                onUpdateJob={(fields) => handleUpdateJobState(currentJob!.id, fields)}
+                activeSection={activeTab}
+                onSelectSection={setActiveTab}
+              />
+
+              {/* Content viewport based on Tab selection */}
+              <div className="grid grid-cols-1 gap-6">
+                
+                {activeTab === 'workflow' && (
+                  <WorkflowSection
+                    job={currentJob!}
+                    tasks={tasks}
+                    onToggleTask={handleToggleTask}
+                    onAddTask={(name, stage) => handleAddTask(currentJob!.id, name, stage)}
+                    onUpdateStatus={(newStatus) => handleUpdateJobStatus(currentJob!.id, newStatus)}
+                  />
+                )}
+
+                {activeTab === 'specs' && (
+                  <SpecificationsSection
+                    job={currentJob!}
+                    onUpdateSpecs={(updated) => handleUpdateSpecs(currentJob!.id, updated)}
+                  />
+                )}
+
+                {activeTab === 'vault' && (
+                  <VisualVault
+                    job={currentJob!}
+                    files={files.filter((f) => f.jobId === currentJob!.id)}
+                    onAddFile={handleAddFile}
+                    onDeleteFile={handleDeleteFile}
+                  />
+                )}
+
+                {activeTab === 'financials' && (
+                  <FinancialsSection
+                    job={currentJob!}
+                    financials={financials}
+                    onAddTransaction={handleAddTransaction}
+                  />
+                )}
+
+                {activeTab === 'notes' && (
+                  <NotesSection
+                    job={currentJob!}
+                    notes={notes}
+                    onAddNote={(content, author) => handleAddNote(currentJob!.id, content, author)}
+                  />
+                )}
+
+              </div>
+
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </main>
+
+      {/* --- New Job creation Modal Form --- */}
+      <AnimatePresence>
+        {showAddJobModal && (
+          <NewJobModal
+            onClose={() => setShowAddJobModal(false)}
+            onSave={handleCreateNewJob}
+          />
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}
