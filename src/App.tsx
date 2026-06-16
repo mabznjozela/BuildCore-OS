@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   INITIAL_JOBS,
@@ -88,6 +88,32 @@ export default function App() {
     const saved = localStorage.getItem('kl_sleek_theme');
     return saved ? JSON.parse(saved) : true;
   });
+
+  // --- Exclusive Security Lock & Presentation Control ---
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const saved = sessionStorage.getItem('kl_authenticated');
+    return saved === 'true';
+  });
+  const [passwordInput, setPasswordInput] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === 'MR328355') {
+      sessionStorage.setItem('kl_authenticated', 'true');
+      setIsAuthenticated(true);
+      setPasswordError(null);
+    } else {
+      setPasswordError('Invalid credentials. Check key & try again.');
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('kl_authenticated');
+    setIsAuthenticated(false);
+    setPasswordInput('');
+    setPasswordError(null);
+  };
   // Sync to localstorage
   useEffect(() => {
     localStorage.setItem('kl_db_mode', activeDatabaseMode);
@@ -400,6 +426,107 @@ export default function App() {
     return matchesSearch;
   });
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#070b13] flex flex-col items-center justify-center p-4 font-sans select-none relative overflow-hidden">
+        {/* Modern abstract cosmic ambient glows */}
+        <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-red-600/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none" />
+        
+        {/* Branded Card mirroring the uploaded Kitchen Lab logo and business layout */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-lg bg-white rounded-[32px] overflow-hidden shadow-2xl shadow-black/60 relative border border-slate-200 text-slate-800"
+        >
+          {/* Top-Right Red Corner Sweep */}
+          <div className="absolute top-0 right-0 w-36 h-36 bg-[#dc2626] rounded-bl-[100px] pointer-events-none opacity-95" />
+          
+          {/* Bottom-Left Red Corner Sweep */}
+          <div className="absolute bottom-0 left-0 w-36 h-36 bg-[#dc2626] rounded-tr-[100px] pointer-events-none opacity-95" />
+
+          {/* Card Content with padded premium spacing */}
+          <div className="p-8 sm:p-12 flex flex-col items-center relative z-10">
+            
+            {/* Logo Group */}
+            <div className="flex items-center gap-1 mt-6 mb-2 select-none justify-center w-full">
+              <span className="text-[40px] sm:text-[46px] font-extrabold tracking-tight text-slate-500 font-sans leading-none">Kitchen</span>
+              
+              {/* Connected Active Red Pulse ECG Waves */}
+              <svg className="w-16 h-8 shrink-0 self-center" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 20H25L30 12L35 20H40L46 2L52 38L58 15L63 24L68 20H95" stroke="#dc2626" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              
+              <span className="text-[40px] sm:text-[46px] font-black tracking-tight text-black font-sans leading-none">Lab</span>
+            </div>
+            
+            <div className="w-10 h-0.5 bg-[#dc2626] rounded-full mb-8" />
+
+            {/* Sub-Header info block */}
+            <div className="text-center mb-8">
+              <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest">MASTER SECURITY PORTAL</h2>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed max-w-sm">
+                Enter David's master access credential pin to unlock the Kitchen Lab Operating System workspace.
+              </p>
+            </div>
+
+            {/* Password input form */}
+            <form onSubmit={handlePasswordSubmit} className="w-full space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest pl-1 block">
+                  Corporate Security PIN
+                </label>
+                <div className="relative">
+                  <input
+                    id="secure-access-password-input"
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      if (passwordError) setPasswordError(null);
+                    }}
+                    placeholder="••••••••••••"
+                    className="w-full bg-slate-50 text-slate-950 px-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-red-650 focus:outline-none font-mono text-center text-sm tracking-[0.3em] font-extrabold shadow-inner transition-all duration-200"
+                    autoFocus
+                  />
+                </div>
+                {passwordError && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-[11px] text-red-650 font-semibold mt-2 text-center"
+                  >
+                    ⚠️ {passwordError}
+                  </motion.p>
+                )}
+              </div>
+
+              <button
+                id="unlock-submit-btn"
+                type="submit"
+                className="w-full bg-slate-950 hover:bg-slate-900 active:scale-98 text-white font-black text-xs tracking-widest uppercase py-4 rounded-2xl cursor-pointer transition-all duration-150 shadow-lg shadow-black/15 border border-slate-800 animate-pulse"
+              >
+                🔓 Request Secure Access
+              </button>
+            </form>
+
+            <div className="mt-8 border-t border-slate-100 pt-6 w-full text-center">
+              <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+                Confidential IP • Kitchen Lab Ltd
+              </span>
+            </div>
+          </div>
+        </motion.div>
+        
+        {/* Ambient indicator */}
+        <div className="mt-6 flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider">
+          <span>🔒 SHA-256 Session Encrypted</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen ${isSleekTheme ? 'bg-[#090b11] text-slate-100' : 'bg-[#f8fafc] text-slate-800'} font-sans antialiased pb-16 transition-colors duration-300`}>
       
@@ -434,9 +561,14 @@ export default function App() {
             >
               {isSleekTheme ? '🔳 Minimalist Chalk' : '🖤 Sleek Carbon'}
             </button>
-            <span className="text-xs bg-slate-800 px-3 py-1.5 rounded-lg text-slate-300 font-medium hidden sm:inline">
-              👤 David (Admin)
-            </span>
+            <button
+              id="lock-dashboard-btn"
+              onClick={handleLogout}
+              className="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-red-500/30 px-3 py-1.5 sm:py-2 rounded-xl text-slate-300 hover:text-red-400 font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              title="Click to lock the console instantly"
+            >
+              🔒 Lock Console
+            </button>
             <button
               id="top-add-job-btn"
               onClick={() => setShowAddJobModal(true)}

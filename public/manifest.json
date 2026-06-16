@@ -1,0 +1,23 @@
+{
+  "short_name": "Kitchen Lab",
+  "name": "Kitchen Lab OS",
+  "icons": [
+    {
+      "src": "/kitchenlab_logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/kitchenlab_logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#090d16",
+  "theme_color": "#dc2626",
+  "display": "standalone",
+  "orientation": "any"
+}
