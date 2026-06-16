@@ -20,6 +20,15 @@ export default function CommandCentre({
   onSelectSection
 }: CommandCentreProps) {
   const [nextAction, setNextAction] = useState<string>(job.nextAction || '');
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editFields, setEditFields] = useState({
+    clientName: '',
+    phone: '',
+    email: '',
+    address: '',
+    area: '',
+    comments: ''
+  });
 
   useEffect(() => {
     setNextAction(job.nextAction || '');
@@ -31,6 +40,27 @@ export default function CommandCentre({
 
   const handleNextActionSave = () => {
     onUpdateJob({ nextAction });
+  };
+
+  const startEditing = () => {
+    setEditFields({
+      clientName: job.clientName || '',
+      phone: job.phone || '',
+      email: job.email || '',
+      address: job.address || '',
+      area: job.area || '',
+      comments: job.comments || ''
+    });
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    onUpdateJob(editFields);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
   };
 
   return (
@@ -57,73 +87,188 @@ export default function CommandCentre({
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
           
-          {/* Main info (Left) */}
-          <div className="lg:col-span-7 space-y-4">
-            <div>
-              <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                <span className={`text-[9px] font-sans font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
-                  job.health === 'On Track' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                  job.health === 'Needs Attention' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                  'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                }`}>
-                  ❤️ Health: {job.health}
-                </span>
-                <span className="text-xs text-slate-400 font-medium font-sans">
-                  • {job.area}
-                </span>
-              </div>
-              <h1 className="text-2xl md:text-3xl font-sans font-extrabold text-slate-100 tracking-tight">
-                {job.clientName}
-              </h1>
-              <p className="text-xs text-slate-400 max-w-xl mt-1.5 leading-relaxed font-sans">
-                {job.comments}
-              </p>
-            </div>
-
-            {/* Quick Contacts detail in Command block */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 pt-2 border-t border-slate-800/80">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-slate-500 shrink-0" />
-                <span className="truncate">{job.address}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-slate-500 shrink-0" />
-                <span>{job.phone}</span>
-              </div>
-              <div className="flex items-center gap-2 sm:col-span-2">
-                <Mail className="h-4 w-4 text-slate-500 shrink-0" />
-                <span className="truncate">{job.email}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Controls & Quick Knobs (Right) */}
-          <div className="lg:col-span-5 flex flex-col justify-between space-y-4 lg:border-l lg:border-slate-800/80 lg:pl-6">
-            
-            {/* Health selectors */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                Adjust Project Health
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['On Track', 'Needs Attention', 'At Risk'] as ProjectHealth[]).map((h) => (
+          {isEditing ? (
+            /* Editing State Form */
+            <div className="lg:col-span-12 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 className="text-xs font-bold tracking-wider text-indigo-400 uppercase">
+                  ✏️ Edit Client & Project Details
+                </h3>
+                <div className="flex gap-2">
                   <button
-                    key={h}
-                    id={`health-btn-${h}`}
-                    onClick={() => handleHealthChange(h)}
-                    className={`text-[10px] font-sans font-extrabold py-1.5 rounded-lg border transition-all cursor-pointer ${
-                      job.health === h
-                        ? h === 'On Track' ? 'bg-emerald-600 border-emerald-500 text-white' :
-                          h === 'Needs Attention' ? 'bg-amber-600 border-amber-500 text-white' :
-                          'bg-rose-600 border-rose-500 text-white'
-                        : 'bg-slate-850 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
+                    onClick={handleCancel}
+                    className="text-xs bg-slate-800 hover:bg-slate-750 text-slate-300 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer"
                   >
-                    {h}
+                    Cancel
                   </button>
-                ))}
+                  <button
+                    id="save-client-info-btn"
+                    onClick={handleSave}
+                    className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-indigo-950/40"
+                  >
+                    <Save className="h-3.5 w-3.5" /> Save Details
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Client Name */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editFields.clientName}
+                    onChange={(e) => setEditFields({ ...editFields, clientName: e.target.value })}
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                  />
+                </div>
+
+                {/* Telephone Number */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Contact Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    value={editFields.phone}
+                    onChange={(e) => setEditFields({ ...editFields, phone: e.target.value })}
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                  />
+                </div>
+
+                {/* Email Address */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Client Email
+                  </label>
+                  <input
+                    type="email"
+                    value={editFields.email}
+                    onChange={(e) => setEditFields({ ...editFields, email: e.target.value })}
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                  />
+                </div>
+
+                {/* Project Location/Address */}
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Installation Address
+                  </label>
+                  <input
+                    type="text"
+                    value={editFields.address}
+                    onChange={(e) => setEditFields({ ...editFields, address: e.target.value })}
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                  />
+                </div>
+
+                {/* Geographic Area */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Kitchen Area / Region
+                  </label>
+                  <input
+                    type="text"
+                    value={editFields.area}
+                    onChange={(e) => setEditFields({ ...editFields, area: e.target.value })}
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                  />
+                </div>
+
+                {/* Project Comments/Brief */}
+                <div className="md:col-span-3 space-y-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Project General Backstory & Notes
+                  </label>
+                  <textarea
+                    value={editFields.comments}
+                    onChange={(e) => setEditFields({ ...editFields, comments: e.target.value })}
+                    rows={2}
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400 resize-none"
+                  />
+                </div>
               </div>
             </div>
+          ) : (
+            /* Normal Read-Only Display State */
+            <>
+              {/* Main info (Left) */}
+              <div className="lg:col-span-7 space-y-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                    <span className={`text-[9px] font-sans font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
+                      job.health === 'On Track' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                      job.health === 'Needs Attention' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                      'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                    }`}>
+                      ❤️ Health: {job.health}
+                    </span>
+                    <span className="text-xs text-slate-400 font-medium font-sans">
+                      • {job.area}
+                    </span>
+                    <button
+                      id="edit-client-info-trigger-btn"
+                      onClick={startEditing}
+                      className="ml-auto flex items-center gap-1 text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-indigo-550 text-slate-300 hover:text-white px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer select-none"
+                    >
+                      ✏️ Edit Info
+                    </button>
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-sans font-extrabold text-slate-100 tracking-tight">
+                    {job.clientName}
+                  </h1>
+                  <p className="text-xs text-slate-400 max-w-xl mt-1.5 leading-relaxed font-sans">
+                    {job.comments}
+                  </p>
+                </div>
+
+                {/* Quick Contacts detail in Command block */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 pt-2 border-t border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-slate-500 shrink-0" />
+                    <span className="truncate">{job.address}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-slate-500 shrink-0" />
+                    <span className="font-semibold text-indigo-300">{job.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 sm:col-span-2">
+                    <Mail className="h-4 w-4 text-slate-500 shrink-0" />
+                    <span className="truncate">{job.email}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Controls & Quick Knobs (Right) */}
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-4 lg:border-l lg:border-slate-800/80 lg:pl-6">
+                
+                {/* Health selectors */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Adjust Project Health
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['On Track', 'Needs Attention', 'At Risk'] as ProjectHealth[]).map((h) => (
+                      <button
+                        key={h}
+                        id={`health-btn-${h}`}
+                        onClick={() => handleHealthChange(h)}
+                        className={`text-[10px] font-sans font-extrabold py-1.5 rounded-lg border transition-all cursor-pointer ${
+                          job.health === h
+                            ? h === 'On Track' ? 'bg-emerald-600 border-emerald-500 text-white' :
+                              h === 'Needs Attention' ? 'bg-amber-600 border-amber-500 text-white' :
+                              'bg-rose-600 border-rose-500 text-white'
+                            : 'bg-slate-850 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {h}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+    
 
             {/* Next Actions quick text input */}
             <div>
@@ -163,7 +308,9 @@ export default function CommandCentre({
             </div>
 
           </div>
-        </div>
+        </>
+      )}
+    </div>
 
         {/* Rapid Jump Tabs Menu inside detail */}
         <div className="mt-6 pt-4 border-t border-slate-800/70 flex items-center overflow-x-auto gap-2 scrollbar-none">

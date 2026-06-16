@@ -8,6 +8,8 @@ import {
   INITIAL_NOTES
 } from './mockData';
 import { Job, Task, FinancialRecord, VaultFile, JobNote, JobStatus, ProjectHealth } from './types';
+import { exportToMasterExcel } from './utils/excelExport';
+import { FileSpreadsheet } from 'lucide-react';
 import CommandCentre from './components/CommandCentre';
 import WorkflowSection from './components/WorkflowSection';
 import SpecificationsSection from './components/SpecificationsSection';
@@ -569,6 +571,7 @@ export default function App() {
             >
               🔒 Lock Console
             </button>
+            {/* Export Master Excel hidden for next tier / tier upgrade option */}
             <button
               id="top-add-job-btn"
               onClick={() => setShowAddJobModal(true)}
