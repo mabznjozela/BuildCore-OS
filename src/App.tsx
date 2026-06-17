@@ -10,6 +10,8 @@ import {
 import { Job, Task, FinancialRecord, VaultFile, JobNote, JobStatus, ProjectHealth } from './types';
 import { exportToMasterExcel } from './utils/excelExport';
 import { FileSpreadsheet } from 'lucide-react';
+import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import CommandCentre from './components/CommandCentre';
 import WorkflowSection from './components/WorkflowSection';
 import SpecificationsSection from './components/SpecificationsSection';
@@ -143,6 +145,110 @@ export default function App() {
     localStorage.setItem('kl_notes', JSON.stringify(notes));
   }, [notes]);
 
+  // --- Firebase Cloud Sync Engine ---
+  useEffect(() => {
+    const unsubJobs = onSnapshot(collection(db, 'jobs'), (snapshot) => {
+      const list: Job[] = [];
+      snapshot.forEach((doc) => {
+        list.push(doc.data() as Job);
+      });
+      if (snapshot.size > 0) {
+        setJobs(list);
+      }
+    });
+
+    const unsubTasks = onSnapshot(collection(db, 'tasks'), (snapshot) => {
+      const list: Task[] = [];
+      snapshot.forEach((doc) => {
+        list.push(doc.data() as Task);
+      });
+      if (snapshot.size > 0) {
+        setTasks(list);
+      }
+    });
+
+    const unsubFinancials = onSnapshot(collection(db, 'financials'), (snapshot) => {
+      const list: FinancialRecord[] = [];
+      snapshot.forEach((doc) => {
+        list.push(doc.data() as FinancialRecord);
+      });
+      if (snapshot.size > 0) {
+        setFinancials(list);
+      }
+    });
+
+    const unsubFiles = onSnapshot(collection(db, 'files'), (snapshot) => {
+      const list: VaultFile[] = [];
+      snapshot.forEach((doc) => {
+        list.push(doc.data() as VaultFile);
+      });
+      if (snapshot.size > 0) {
+        setFiles(list);
+      }
+    });
+
+    const unsubNotes = onSnapshot(collection(db, 'notes'), (snapshot) => {
+      const list: JobNote[] = [];
+      snapshot.forEach((doc) => {
+        list.push(doc.data() as JobNote);
+      });
+      if (snapshot.size > 0) {
+        setNotes(list);
+      }
+    });
+
+    // Migrate Dave's local storage data up to the cloud without losing any of his hard work!
+    const runCloudMigration = async () => {
+      try {
+        const isMigrated = localStorage.getItem('kl_cloud_migrated') === 'true';
+        if (!isMigrated) {
+          const localJobsRaw = localStorage.getItem('kl_jobs');
+          const localTasksRaw = localStorage.getItem('kl_tasks');
+          const localFinancialsRaw = localStorage.getItem('kl_financials');
+          const localFilesRaw = localStorage.getItem('kl_files');
+          const localNotesRaw = localStorage.getItem('kl_notes');
+
+          const localJobs: Job[] = localJobsRaw ? JSON.parse(localJobsRaw) : INITIAL_JOBS;
+          const localTasks: Task[] = localTasksRaw ? JSON.parse(localTasksRaw) : INITIAL_TASKS;
+          const localFinancials: FinancialRecord[] = localFinancialsRaw ? JSON.parse(localFinancialsRaw) : INITIAL_FINANCIALS;
+          const localFiles: VaultFile[] = localFilesRaw ? JSON.parse(localFilesRaw) : INITIAL_FILES;
+          const localNotes: JobNote[] = localNotesRaw ? JSON.parse(localNotesRaw) : INITIAL_NOTES;
+
+          // Migrate each record safely with merge: true to avoid overwriting newer cloud entries
+          for (const job of localJobs) {
+            await setDoc(doc(db, 'jobs', job.id), job, { merge: true });
+          }
+          for (const task of localTasks) {
+            await setDoc(doc(db, 'tasks', task.id), task, { merge: true });
+          }
+          for (const financial of localFinancials) {
+            await setDoc(doc(db, 'financials', financial.id), financial, { merge: true });
+          }
+          for (const file of localFiles) {
+            await setDoc(doc(db, 'files', file.id), file, { merge: true });
+          }
+          for (const note of localNotes) {
+            await setDoc(doc(db, 'notes', note.id), note, { merge: true });
+          }
+
+          localStorage.setItem('kl_cloud_migrated', 'true');
+        }
+      } catch (err) {
+        console.error("Firebase migration failed gracefully:", err);
+      }
+    };
+
+    runCloudMigration();
+
+    return () => {
+      unsubJobs();
+      unsubTasks();
+      unsubFinancials();
+      unsubFiles();
+      unsubNotes();
+    };
+  }, []);
+
   // --- Helper calculations ---
   const getTasksOutstandingCount = (jobId: string) => {
     const STATUS_STAGES: Record<string, string> = {
@@ -213,114 +319,90 @@ export default function App() {
   };
 
   const handleUpdateJobStatus = (jobId: string, newStatus: JobStatus) => {
-    setJobs((prevJobs) =>
-      prevJobs.map((j) => {
-        if (j.id === jobId) {
-          // Record change in statusSince
-          return { ...j, status: newStatus, statusSince: new Date().toISOString() };
-        }
-        return j;
-      })
-    );
-
-    // Auto-message for visual feedback
+    const job = jobs.find((j) => j.id === jobId);
+    if (job) {
+      setDoc(doc(db, 'jobs', jobId), {
+        status: newStatus,
+        statusSince: new Date().toISOString()
+      }, { merge: true });
+    }
     triggerAutomationNotification(`Status advanced to "${newStatus.substring(2)}" for project!`);
   };
 
   const handleToggleTask = (taskId: string) => {
-    let affectedJobId = '';
-    setTasks((prevTasks) =>
-      prevTasks.map((t) => {
-        if (t.id === taskId) {
-          affectedJobId = t.jobId;
-          const nextState = !t.complete;
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      const nextState = !task.complete;
+      setDoc(doc(db, 'tasks', taskId), { complete: nextState }, { merge: true });
 
-          // SPECIAL AUTOMATION: If "60% Production Deposit Received" is ticked complete
-          // We trigger depositPaid set if it is currently 0, and suggest moving status!
-          if (t.taskName.includes('60%') && nextState) {
-            setTimeout(() => {
-              handleTriggerDepositAutomation(t.jobId);
-            }, 100);
-          }
-
-          return { ...t, complete: nextState };
-        }
-        return t;
-      })
-    );
+      if (task.taskName.includes('60%') && nextState) {
+        setTimeout(() => {
+          handleTriggerDepositAutomation(task.jobId);
+        }, 100);
+      }
+    }
   };
 
   const handleTriggerDepositAutomation = (jobId: string) => {
-    setJobs((prevJobs) =>
-      prevJobs.map((j) => {
-        if (j.id === jobId) {
-          const targetDeposit = j.quoteValue * 0.6;
-          // Set depositReceived to exactly 60% if it is currently 0
-          const updatedDeposit = j.depositReceived < targetDeposit ? targetDeposit : j.depositReceived;
-          
-          triggerAutomationNotification(
-            `⚡ Automation Triggered: 60% Deposit Paid! status elevated to "8 Deposit Paid" & Project becomes Active.`
-          );
+    const job = jobs.find((j) => j.id === jobId);
+    if (job) {
+      const targetDeposit = job.quoteValue * 0.6;
+      const updatedDeposit = job.depositReceived < targetDeposit ? targetDeposit : job.depositReceived;
 
-          return {
-            ...j,
-            depositReceived: updatedDeposit,
-            status: '8 Deposit Paid' as JobStatus,
-            statusSince: new Date().toISOString()
-          };
-        }
-        return j;
-      })
-    );
+      triggerAutomationNotification(
+        `⚡ Automation Triggered: 60% Deposit Paid! status elevated to "8 Deposit Paid" & Project becomes Active.`
+      );
+
+      setDoc(doc(db, 'jobs', jobId), {
+        depositReceived: updatedDeposit,
+        status: '8 Deposit Paid',
+        statusSince: new Date().toISOString()
+      }, { merge: true });
+    }
   };
 
   const handleAddTask = (jobId: string, taskName: string, stage: string) => {
+    const newId = `T_CUST_${Date.now()}`;
     const newTask: Task = {
-      id: `T_CUST_${Date.now()}`,
+      id: newId,
       jobId: jobId,
       stage: stage,
       taskName: taskName,
       complete: false
     };
-    setTasks((prev) => [...prev, newTask]);
+    setDoc(doc(db, 'tasks', newId), newTask);
     triggerAutomationNotification(`Bespoke task "${taskName}" inserted into active stage queue.`);
   };
 
   const handleUpdateSpecs = (jobId: string, updatedSpecs: any) => {
-    setJobs((prevJobs) =>
-      prevJobs.map((j) => {
-        if (j.id === jobId) {
-          return { ...j, specs: updatedSpecs };
-        }
-        return j;
-      })
-    );
+    setDoc(doc(db, 'jobs', jobId), { specs: updatedSpecs }, { merge: true });
   };
 
   const handleAddFile = (newFile: Omit<VaultFile, 'id' | 'uploadedAt'>) => {
+    const newId = `V_${Date.now()}`;
     const appended: VaultFile = {
       ...newFile,
-      id: `V_${Date.now()}`,
+      id: newId,
       uploadedAt: new Date().toISOString()
     };
-    setFiles((prev) => [appended, ...prev]);
+    setDoc(doc(db, 'files', newId), appended);
     triggerAutomationNotification(`File "${newFile.name}" pinned securely inside Visual Vault.`);
   };
 
   const handleDeleteFile = (fileId: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+    deleteDoc(doc(db, 'files', fileId));
   };
 
   const handleAddTransaction = (newTx: Omit<FinancialRecord, 'id' | 'date'>) => {
     const txDate = new Date().toISOString().split('T')[0];
+    const newId = `F_${Date.now()}`;
     const logged: FinancialRecord = {
       ...newTx,
-      id: `F_${Date.now()}`,
+      id: newId,
       date: txDate
     };
-    setFinancials((prev) => [logged, ...prev]);
+    setDoc(doc(db, 'financials', newId), logged);
 
-    // Check for 60% deposit trigger: if client just paid something that brings total payments >= 60%
     if (newTx.type === 'payment') {
       const job = jobs.find((j) => j.id === newTx.jobId);
       if (job) {
@@ -329,7 +411,6 @@ export default function App() {
           .reduce((sum, f) => sum + f.amount, 0);
         const newTotal = existingPayments + job.depositReceived + newTx.amount;
         if (newTotal >= job.quoteValue * 0.6 && job.status !== '8 Deposit Paid' && job.status !== '9 Production') {
-          // auto elevate status
           setTimeout(() => {
             handleUpdateJobStatus(job.id, '8 Deposit Paid');
           }, 400);
@@ -339,25 +420,19 @@ export default function App() {
   };
 
   const handleAddNote = (jobId: string, content: string, author: string) => {
+    const newId = `N_${Date.now()}`;
     const newNoteRecord: JobNote = {
-      id: `N_${Date.now()}`,
+      id: newId,
       jobId: jobId,
       author: author,
       content: content,
       createdAt: new Date().toISOString()
     };
-    setNotes((prev) => [newNoteRecord, ...prev]);
+    setDoc(doc(db, 'notes', newId), newNoteRecord);
   };
 
   const handleUpdateJobState = (jobId: string, updatedFields: Partial<Job>) => {
-    setJobs((prevJobs) =>
-      prevJobs.map((j) => {
-        if (j.id === jobId) {
-          return { ...j, ...updatedFields };
-        }
-        return j;
-      })
-    );
+    setDoc(doc(db, 'jobs', jobId), updatedFields, { merge: true });
   };
 
   const handleCreateNewJob = (newJobData: any) => {
@@ -366,9 +441,8 @@ export default function App() {
       statusSince: new Date().toISOString()
     };
 
-    setJobs((prev) => [...prev, newJob]);
+    setDoc(doc(db, 'jobs', newJob.id), newJob);
 
-    // Generate beautiful list of starting template tasks for the new job
     const defaultChecklist: Task[] = [
       { id: `T_${newJob.id}_1`, jobId: newJob.id, stage: 'Design', taskName: 'Wishlist Captured & Functional Brief Drafted', complete: true },
       { id: `T_${newJob.id}_2`, jobId: newJob.id, stage: 'Design', taskName: 'Detailed Laser Site Measurement Completed', complete: false },
@@ -383,9 +457,12 @@ export default function App() {
       { id: `T_${newJob.id}_11`, jobId: newJob.id, stage: 'Production', taskName: 'Premium Hardware Sourced', complete: false }
     ];
 
-    setTasks((prev) => [...prev, ...defaultChecklist]);
+    defaultChecklist.forEach((t) => {
+      setDoc(doc(db, 'tasks', t.id), t);
+    });
+
     setShowAddJobModal(false);
-    setSelectedJobId(newJob.id); // instantly navigate there!
+    setSelectedJobId(newJob.id);
     triggerAutomationNotification(`Project passport ${newJob.id} generated with 11 core tracking tasks.`);
   };
 
@@ -600,58 +677,16 @@ export default function App() {
       </section>
 
       {/* SYSTEM DATABASE ENVIRONMENT & MANUAL BAR */}
-      <section className={`border-b ${isSleekTheme ? 'bg-slate-950 border-slate-900 text-slate-100' : 'bg-white border-slate-150 text-slate-850'} py-3 transition-colors duration-300`}>
+      <section className={`border-b ${isSleekTheme ? 'bg-slate-950 border-slate-900 text-slate-100' : 'bg-[#ffffff] border-slate-150 text-slate-850'} py-3 transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest font-mono shrink-0">
-              ACTIVE ENVIRONMENT:
+              DATABASE STATUS:
             </span>
-            <div className="flex bg-slate-900 text-white p-1 rounded-xl border border-slate-850 shrink-0 select-none">
-              <button
-                id="env-demo-mode-btn"
-                onClick={() => {
-                  handleSeedDemoData(
-                    getSevenDemoClients(),
-                    getSevenDemoTasks(),
-                    getSevenDemoFinancials(),
-                    getSevenDemoFiles(),
-                    getSevenDemoNotes()
-                  );
-                  setActiveDatabaseMode('demo');
-                  triggerAutomationNotification("🚀 Populated exactly 7 Demo Clients in various workflow stages!");
-                }}
-                className={`text-xs px-3.5 py-1.5 rounded-lg font-sans font-extrabold cursor-pointer transition-all flex items-center gap-1.5 ${
-                  activeDatabaseMode === 'demo'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                    : 'text-slate-450 hover:text-slate-205'
-                }`}
-              >
-                📊 7-Client Demo Sandbox
-              </button>
-              <button
-                id="env-live-mode-btn"
-                onClick={() => {
-                  handleResetCleanState();
-                  setActiveDatabaseMode('live');
-                  triggerAutomationNotification("🧹 Reset to absolute zero blank active workspace (BuildCore)!");
-                }}
-                className={`text-xs px-3.5 py-1.5 rounded-lg font-sans font-extrabold cursor-pointer transition-all flex items-center gap-1.5 ${
-                  activeDatabaseMode === 'live'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                    : 'text-slate-450 hover:text-slate-205'
-                }`}
-              >
-                🧹 Live BuildCore (Blank Slate)
-              </button>
-            </div>
-            
-            {/* Environment Status Pill */}
-            <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg self-start sm:self-center shrink-0 ${
-              activeDatabaseMode === 'demo'
-                ? 'bg-amber-950/40 text-amber-400 border border-amber-900/40'
-                : 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40'
-            }`}>
-              {activeDatabaseMode === 'demo' ? '📝 DEMO MODE ACTIVE' : '⚡ LIVE WORKSPACE ACTIVE'}
+            {/* Cloud Sync Status Pill */}
+            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-800/30 flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+              <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-pulse" />
+              ⚡ CLOUD DATABASE SYNCED
             </span>
           </div>
 

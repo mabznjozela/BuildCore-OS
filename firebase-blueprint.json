@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "Job": {
+      "title": "Job",
+      "description": "Represents a kitchen design/renovation job record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientName": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "area": { "type": "string" },
+        "leadSource": { "type": "string" },
+        "status": { "type": "string" },
+        "nextAction": { "type": "string" },
+        "health": { "type": "string" },
+        "statusSince": { "type": "string" },
+        "installationDate": { "type": "string" },
+        "quoteValue": { "type": "number" },
+        "depositReceived": { "type": "number" },
+        "comments": { "type": "string" },
+        "siteNotes": { "type": "string" },
+        "specs": { "type": "object" }
+      },
+      "required": ["id", "clientName", "status", "health"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Represents workflow checklist tasks associated with distinct jobs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "stage": { "type": "string" },
+        "taskName": { "type": "string" },
+        "complete": { "type": "boolean" }
+      },
+      "required": ["id", "jobId", "taskName", "complete"]
+    },
+    "FinancialRecord": {
+      "title": "FinancialRecord",
+      "description": "Represents incoming client payments or project expenses",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "type": { "type": "string", "enum": ["expense", "payment"] },
+        "amount": { "type": "number" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["id", "jobId", "type", "amount"]
+    },
+    "VaultFile": {
+      "title": "VaultFile",
+      "description": "Represents documents, designs, CAD files, and site images uploaded to a project",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "type": { "type": "string", "enum": ["photo", "render", "document"] },
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "uploadedAt": { "type": "string" }
+      },
+      "required": ["id", "jobId", "type", "name", "url", "uploadedAt"]
+    },
+    "JobNote": {
+      "title": "JobNote",
+      "description": "Represents internal collaborative communication notes on a job",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "author": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "jobId", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/jobs/{jobId}": {
+      "schema": "Job",
+      "description": "Primary kitchen design job records"
+    },
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Specific project checklist tasks"
+    },
+    "/financials/{financialId}": {
+      "schema": "FinancialRecord",
+      "description": "Expense and income payment tracking list"
+    },
+    "/files/{fileId}": {
+      "schema": "VaultFile",
+      "description": "Shared project files, layout plans, and photo logs"
+    },
+    "/notes/{noteId}": {
+      "schema": "JobNote",
+      "description": "Day-to-day conversation and collaborative update logs"
+    }
+  }
+}
