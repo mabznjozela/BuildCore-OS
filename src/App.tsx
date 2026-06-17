@@ -27,6 +27,7 @@ import {
   getSevenDemoFiles, 
   getSevenDemoNotes 
 } from './demoSeeder';
+import { sanitizeObject } from './utils/sanitizer';
 import { BookOpen, Smartphone, WifiOff, Sliders, ShieldCheck, Database, Trash2 } from 'lucide-react';
 import {
   Wrench,
@@ -52,27 +53,27 @@ export default function App() {
   // --- LocalStorage State Hydraton & Hooks ---
   const [jobs, setJobs] = useState<Job[]>(() => {
     const saved = localStorage.getItem('kl_jobs');
-    return saved ? JSON.parse(saved) : INITIAL_JOBS;
+    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_JOBS);
   });
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem('kl_tasks');
-    return saved ? JSON.parse(saved) : INITIAL_TASKS;
+    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_TASKS);
   });
 
   const [financials, setFinancials] = useState<FinancialRecord[]>(() => {
     const saved = localStorage.getItem('kl_financials');
-    return saved ? JSON.parse(saved) : INITIAL_FINANCIALS;
+    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_FINANCIALS);
   });
 
   const [files, setFiles] = useState<VaultFile[]>(() => {
     const saved = localStorage.getItem('kl_files');
-    return saved ? JSON.parse(saved) : INITIAL_FILES;
+    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_FILES);
   });
 
   const [notes, setNotes] = useState<JobNote[]>(() => {
     const saved = localStorage.getItem('kl_notes');
-    return saved ? JSON.parse(saved) : INITIAL_NOTES;
+    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_NOTES);
   });
 
   // --- View states ---
@@ -92,6 +93,11 @@ export default function App() {
     const saved = localStorage.getItem('kl_sleek_theme');
     return saved ? JSON.parse(saved) : true;
   });
+  const [showSyncNotice, setShowSyncNotice] = useState<boolean>(() => {
+    const saved = localStorage.getItem('kl_sync_notice_dismissed');
+    return saved !== 'true';
+  });
+  const [isSyncingLocal, setIsSyncingLocal] = useState<boolean>(false);
 
   // --- Exclusive Security Lock & Presentation Control ---
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -118,6 +124,17 @@ export default function App() {
     setPasswordInput('');
     setPasswordError(null);
   };
+
+  const handleGuestTourEntry = () => {
+    setPasswordInput('MR328355');
+    sessionStorage.setItem('kl_authenticated', 'true');
+    setIsAuthenticated(true);
+    setPasswordError(null);
+    setTimeout(() => {
+      triggerAutomationNotification("✨ Welcome to Kitchen Lab OS: Guest Mode Enabled. Interactive Demo Sandbox Loaded!");
+    }, 400);
+  };
+
   // Sync to localstorage
   useEffect(() => {
     localStorage.setItem('kl_db_mode', activeDatabaseMode);
@@ -125,80 +142,13 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('kl_sleek_theme', JSON.stringify(isSleekTheme));
   }, [isSleekTheme]);
-  useEffect(() => {
-    localStorage.setItem('kl_jobs', JSON.stringify(jobs));
-  }, [jobs]);
-
-  useEffect(() => {
-    localStorage.setItem('kl_tasks', JSON.stringify(tasks));
-  }, [tasks]);
-
-  useEffect(() => {
-    localStorage.setItem('kl_financials', JSON.stringify(financials));
-  }, [financials]);
-
-  useEffect(() => {
-    localStorage.setItem('kl_files', JSON.stringify(files));
-  }, [files]);
-
-  useEffect(() => {
-    localStorage.setItem('kl_notes', JSON.stringify(notes));
-  }, [notes]);
 
   // --- Firebase Cloud Sync Engine ---
   useEffect(() => {
-    const unsubJobs = onSnapshot(collection(db, 'jobs'), (snapshot) => {
-      const list: Job[] = [];
-      snapshot.forEach((doc) => {
-        list.push(doc.data() as Job);
-      });
-      if (snapshot.size > 0) {
-        setJobs(list);
-      }
-    });
+    let isMounted = true;
+    let unsubs: (() => void)[] = [];
 
-    const unsubTasks = onSnapshot(collection(db, 'tasks'), (snapshot) => {
-      const list: Task[] = [];
-      snapshot.forEach((doc) => {
-        list.push(doc.data() as Task);
-      });
-      if (snapshot.size > 0) {
-        setTasks(list);
-      }
-    });
-
-    const unsubFinancials = onSnapshot(collection(db, 'financials'), (snapshot) => {
-      const list: FinancialRecord[] = [];
-      snapshot.forEach((doc) => {
-        list.push(doc.data() as FinancialRecord);
-      });
-      if (snapshot.size > 0) {
-        setFinancials(list);
-      }
-    });
-
-    const unsubFiles = onSnapshot(collection(db, 'files'), (snapshot) => {
-      const list: VaultFile[] = [];
-      snapshot.forEach((doc) => {
-        list.push(doc.data() as VaultFile);
-      });
-      if (snapshot.size > 0) {
-        setFiles(list);
-      }
-    });
-
-    const unsubNotes = onSnapshot(collection(db, 'notes'), (snapshot) => {
-      const list: JobNote[] = [];
-      snapshot.forEach((doc) => {
-        list.push(doc.data() as JobNote);
-      });
-      if (snapshot.size > 0) {
-        setNotes(list);
-      }
-    });
-
-    // Migrate Dave's local storage data up to the cloud without losing any of his hard work!
-    const runCloudMigration = async () => {
+    const initializeAndSync = async () => {
       try {
         const isMigrated = localStorage.getItem('kl_cloud_migrated') === 'true';
         if (!isMigrated) {
@@ -208,11 +158,11 @@ export default function App() {
           const localFilesRaw = localStorage.getItem('kl_files');
           const localNotesRaw = localStorage.getItem('kl_notes');
 
-          const localJobs: Job[] = localJobsRaw ? JSON.parse(localJobsRaw) : INITIAL_JOBS;
-          const localTasks: Task[] = localTasksRaw ? JSON.parse(localTasksRaw) : INITIAL_TASKS;
-          const localFinancials: FinancialRecord[] = localFinancialsRaw ? JSON.parse(localFinancialsRaw) : INITIAL_FINANCIALS;
-          const localFiles: VaultFile[] = localFilesRaw ? JSON.parse(localFilesRaw) : INITIAL_FILES;
-          const localNotes: JobNote[] = localNotesRaw ? JSON.parse(localNotesRaw) : INITIAL_NOTES;
+          const localJobs: Job[] = sanitizeObject(localJobsRaw ? JSON.parse(localJobsRaw) : INITIAL_JOBS);
+          const localTasks: Task[] = sanitizeObject(localTasksRaw ? JSON.parse(localTasksRaw) : INITIAL_TASKS);
+          const localFinancials: FinancialRecord[] = sanitizeObject(localFinancialsRaw ? JSON.parse(localFinancialsRaw) : INITIAL_FINANCIALS);
+          const localFiles: VaultFile[] = sanitizeObject(localFilesRaw ? JSON.parse(localFilesRaw) : INITIAL_FILES);
+          const localNotes: JobNote[] = sanitizeObject(localNotesRaw ? JSON.parse(localNotesRaw) : INITIAL_NOTES);
 
           // Migrate each record safely with merge: true to avoid overwriting newer cloud entries
           for (const job of localJobs) {
@@ -234,18 +184,140 @@ export default function App() {
           localStorage.setItem('kl_cloud_migrated', 'true');
         }
       } catch (err) {
-        console.error("Firebase migration failed gracefully:", err);
+        console.error("Firebase cloud migration failed gracefully:", err);
       }
+
+      if (!isMounted) return;
+
+      // Set up real-time active subscriptions with complete error resilience and persistent local mirror
+      const unsubJobs = onSnapshot(collection(db, 'jobs'), (snapshot) => {
+        const list: Job[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push(docSnap.data() as Job);
+        });
+        const sanitized = sanitizeObject(list);
+        setJobs(sanitized);
+        localStorage.setItem('kl_jobs', JSON.stringify(sanitized));
+
+        // Auto-correct any legacy data in Firestore in the background
+        list.forEach((item, i) => {
+          const originalStr = JSON.stringify(item);
+          const sanitizedItem = sanitized[i];
+          const sanitizedStr = JSON.stringify(sanitizedItem);
+          if (originalStr !== sanitizedStr) {
+            setDoc(doc(db, 'jobs', item.id), sanitizedItem, { merge: true }).catch(err => {
+              console.error("Failed to auto-correct job in Firestore:", err);
+            });
+          }
+        });
+      }, (error) => {
+        console.error("Firestore jobs listener error caught gracefully:", error);
+      });
+
+      const unsubTasks = onSnapshot(collection(db, 'tasks'), (snapshot) => {
+        const list: Task[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push(docSnap.data() as Task);
+        });
+        const sanitized = sanitizeObject(list);
+        setTasks(sanitized);
+        localStorage.setItem('kl_tasks', JSON.stringify(sanitized));
+
+        // Auto-correct tasks
+        list.forEach((item, i) => {
+          const originalStr = JSON.stringify(item);
+          const sanitizedItem = sanitized[i];
+          const sanitizedStr = JSON.stringify(sanitizedItem);
+          if (originalStr !== sanitizedStr) {
+            setDoc(doc(db, 'tasks', item.id), sanitizedItem, { merge: true }).catch(err => {
+              console.error("Failed to auto-correct task in Firestore:", err);
+            });
+          }
+        });
+      }, (error) => {
+        console.error("Firestore tasks listener error caught gracefully:", error);
+      });
+
+      const unsubFinancials = onSnapshot(collection(db, 'financials'), (snapshot) => {
+        const list: FinancialRecord[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push(docSnap.data() as FinancialRecord);
+        });
+        const sanitized = sanitizeObject(list);
+        setFinancials(sanitized);
+        localStorage.setItem('kl_financials', JSON.stringify(sanitized));
+
+        // Auto-correct financials
+        list.forEach((item, i) => {
+          const originalStr = JSON.stringify(item);
+          const sanitizedItem = sanitized[i];
+          const sanitizedStr = JSON.stringify(sanitizedItem);
+          if (originalStr !== sanitizedStr) {
+            setDoc(doc(db, 'financials', item.id), sanitizedItem, { merge: true }).catch(err => {
+              console.error("Failed to auto-correct financial in Firestore:", err);
+            });
+          }
+        });
+      }, (error) => {
+        console.error("Firestore financials listener error caught gracefully:", error);
+      });
+
+      const unsubFiles = onSnapshot(collection(db, 'files'), (snapshot) => {
+        const list: VaultFile[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push(docSnap.data() as VaultFile);
+        });
+        const sanitized = sanitizeObject(list);
+        setFiles(sanitized);
+        localStorage.setItem('kl_files', JSON.stringify(sanitized));
+
+        // Auto-correct files
+        list.forEach((item, i) => {
+          const originalStr = JSON.stringify(item);
+          const sanitizedItem = sanitized[i];
+          const sanitizedStr = JSON.stringify(sanitizedItem);
+          if (originalStr !== sanitizedStr) {
+            setDoc(doc(db, 'files', item.id), sanitizedItem, { merge: true }).catch(err => {
+              console.error("Failed to auto-correct file in Firestore:", err);
+            });
+          }
+        });
+      }, (error) => {
+        console.error("Firestore files listener error caught gracefully:", error);
+      });
+
+      const unsubNotes = onSnapshot(collection(db, 'notes'), (snapshot) => {
+        const list: JobNote[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push(docSnap.data() as JobNote);
+        });
+        const sanitized = sanitizeObject(list);
+        setNotes(sanitized);
+        localStorage.setItem('kl_notes', JSON.stringify(sanitized));
+
+        // Auto-correct notes
+        list.forEach((item, i) => {
+          const originalStr = JSON.stringify(item);
+          const sanitizedItem = sanitized[i];
+          const sanitizedStr = JSON.stringify(sanitizedItem);
+          if (originalStr !== sanitizedStr) {
+            setDoc(doc(db, 'notes', item.id), sanitizedItem, { merge: true }).catch(err => {
+              console.error("Failed to auto-correct note in Firestore:", err);
+            });
+          }
+        });
+      }, (error) => {
+        console.error("Firestore notes listener error caught gracefully:", error);
+      });
+
+      unsubs.push(unsubJobs, unsubTasks, unsubFinancials, unsubFiles, unsubNotes);
     };
 
-    runCloudMigration();
+    initializeAndSync();
 
     return () => {
-      unsubJobs();
-      unsubTasks();
-      unsubFinancials();
-      unsubFiles();
-      unsubNotes();
+      isMounted = false;
+      unsubs.forEach((unsub) => unsub());
     };
   }, []);
 
@@ -294,28 +366,91 @@ export default function App() {
 
   // --- Handlers & Mutator Actions ---
 
-  const handleSeedDemoData = (
+  const handleSeedDemoData = async (
     newJobs: Job[],
     newTasks: Task[],
     newFinancials: FinancialRecord[],
     newFiles: VaultFile[],
     newNotes: JobNote[]
   ) => {
-    setJobs(newJobs);
-    setTasks(newTasks);
-    setFinancials(newFinancials);
-    setFiles(newFiles);
-    setNotes(newNotes);
-    setSelectedJobId(null);
+    try {
+      // First, let's clear existing items to avoid pollution
+      for (const j of jobs) {
+        await deleteDoc(doc(db, 'jobs', j.id));
+      }
+      for (const t of tasks) {
+        await deleteDoc(doc(db, 'tasks', t.id));
+      }
+      for (const f of financials) {
+        await deleteDoc(doc(db, 'financials', f.id));
+      }
+      for (const fl of files) {
+        await deleteDoc(doc(db, 'files', fl.id));
+      }
+      for (const n of notes) {
+        await deleteDoc(doc(db, 'notes', n.id));
+      }
+
+      // Now set isSyncingLocal to show feedback
+      setIsSyncingLocal(true);
+
+      // Now add sanitized records
+      const cleanJobs = sanitizeObject(newJobs);
+      const cleanTasks = sanitizeObject(newTasks);
+      const cleanFinancials = sanitizeObject(newFinancials);
+      const cleanFiles = sanitizeObject(newFiles);
+      const cleanNotes = sanitizeObject(newNotes);
+
+      for (const job of cleanJobs) {
+        await setDoc(doc(db, 'jobs', job.id), job);
+      }
+      for (const task of cleanTasks) {
+        await setDoc(doc(db, 'tasks', task.id), task);
+      }
+      for (const financial of cleanFinancials) {
+        await setDoc(doc(db, 'financials', financial.id), financial);
+      }
+      for (const file of cleanFiles) {
+        await setDoc(doc(db, 'files', file.id), file);
+      }
+      for (const note of cleanNotes) {
+        await setDoc(doc(db, 'notes', note.id), note);
+      }
+
+      setSelectedJobId(null);
+      setIsSyncingLocal(false);
+      triggerAutomationNotification("✨ Successfully seeded clean interactive demo data in the cloud database!");
+    } catch (err) {
+      console.error("Firestore seeding failed:", err);
+      setIsSyncingLocal(false);
+    }
   };
 
-  const handleResetCleanState = () => {
-    setJobs([]);
-    setTasks([]);
-    setFinancials([]);
-    setFiles([]);
-    setNotes([]);
-    setSelectedJobId(null);
+  const handleResetCleanState = async () => {
+    try {
+      setIsSyncingLocal(true);
+      for (const j of jobs) {
+        await deleteDoc(doc(db, 'jobs', j.id));
+      }
+      for (const t of tasks) {
+        await deleteDoc(doc(db, 'tasks', t.id));
+      }
+      for (const f of financials) {
+        await deleteDoc(doc(db, 'financials', f.id));
+      }
+      for (const fl of files) {
+        await deleteDoc(doc(db, 'files', fl.id));
+      }
+      for (const n of notes) {
+        await deleteDoc(doc(db, 'notes', n.id));
+      }
+      setSelectedJobId(null);
+      setIsSyncingLocal(false);
+      triggerAutomationNotification("🗑️ Standard clean slate initialized in the cloud database!");
+    } catch (err) {
+      console.error("Firestore reset failed:", err);
+      setIsSyncingLocal(false);
+    }
   };
 
   const handleUpdateJobStatus = (jobId: string, newStatus: JobStatus) => {
@@ -473,6 +608,57 @@ export default function App() {
     }, 4500);
   };
 
+  const handleForceUploadLocalData = async () => {
+    setIsSyncingLocal(true);
+    try {
+      const localJobsRaw = localStorage.getItem('kl_jobs');
+      const localTasksRaw = localStorage.getItem('kl_tasks');
+      const localFinancialsRaw = localStorage.getItem('kl_financials');
+      const localFilesRaw = localStorage.getItem('kl_files');
+      const localNotesRaw = localStorage.getItem('kl_notes');
+
+      if (localJobsRaw || localTasksRaw || localFinancialsRaw || localFilesRaw || localNotesRaw) {
+        const localJobs: Job[] = localJobsRaw ? JSON.parse(localJobsRaw) : [];
+        const localTasks: Task[] = localTasksRaw ? JSON.parse(localTasksRaw) : [];
+        const localFinancials: FinancialRecord[] = localFinancialsRaw ? JSON.parse(localFinancialsRaw) : [];
+        const localFiles: VaultFile[] = localFilesRaw ? JSON.parse(localFilesRaw) : [];
+        const localNotes: JobNote[] = localNotesRaw ? JSON.parse(localNotesRaw) : [];
+
+        // Upload each record safely with merge
+        for (const job of localJobs) {
+          await setDoc(doc(db, 'jobs', job.id), job, { merge: true });
+        }
+        for (const task of localTasks) {
+          await setDoc(doc(db, 'tasks', task.id), task, { merge: true });
+        }
+        for (const financial of localFinancials) {
+          await setDoc(doc(db, 'financials', financial.id), financial, { merge: true });
+        }
+        for (const file of localFiles) {
+          await setDoc(doc(db, 'files', file.id), file, { merge: true });
+        }
+        for (const note of localNotes) {
+          await setDoc(doc(db, 'notes', note.id), note, { merge: true });
+        }
+
+        localStorage.setItem('kl_cloud_migrated', 'true');
+        triggerAutomationNotification("🟢 Sync forced successfully: All local offline data was uploaded to the cloud database!");
+      } else {
+        triggerAutomationNotification("ℹ️ No offline-saved cache found on this device to upload.");
+      }
+    } catch (err) {
+      console.error("Force manual local-to-cloud upload failed:", err);
+      triggerAutomationNotification("🔴 Sync failed. Check network connection and try again.");
+    } finally {
+      setIsSyncingLocal(false);
+    }
+  };
+
+  const handleCopyStableUrl = () => {
+    navigator.clipboard.writeText("https://ais-pre-wftnbto5nhvufmuv4sesd6-933896873270.europe-west2.run.app");
+    triggerAutomationNotification("📋 Copied stable Shared App URL to clipboard! This is the single URL to use for the demo.");
+  };
+
   // --- Filtering list logic ---
   const filteredJobs = jobs.filter((j) => {
     // Search filter
@@ -584,10 +770,21 @@ export default function App() {
               <button
                 id="unlock-submit-btn"
                 type="submit"
-                className="w-full bg-slate-950 hover:bg-slate-900 active:scale-98 text-white font-black text-xs tracking-widest uppercase py-4 rounded-2xl cursor-pointer transition-all duration-150 shadow-lg shadow-black/15 border border-slate-800 animate-pulse"
+                className="w-full bg-slate-950 hover:bg-slate-900 active:scale-98 text-white font-black text-xs tracking-widest uppercase py-4 rounded-2xl cursor-pointer transition-all duration-150 shadow-lg shadow-black/15 border border-slate-800"
               >
                 🔓 Request Secure Access
               </button>
+
+              <div className="pt-2 flex flex-col gap-2">
+                <button
+                  id="client-demo-bypass-btn"
+                  type="button"
+                  onClick={handleGuestTourEntry}
+                  className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs tracking-wide py-3.5 rounded-2xl cursor-pointer transition-all border border-indigo-200/60 flex items-center justify-center gap-1.5 shadow-sm"
+                >
+                  ✨ Guest Mode • Tap to Auto-Unlock
+                </button>
+              </div>
             </form>
 
             <div className="mt-8 border-t border-slate-100 pt-6 w-full text-center">
@@ -692,6 +889,23 @@ export default function App() {
 
           <div className="flex items-center gap-3 self-end md:self-center">
             <button
+              id="toggle-sync-notice-btn"
+              onClick={() => {
+                setShowSyncNotice(!showSyncNotice);
+                if (!showSyncNotice) {
+                  localStorage.removeItem('kl_sync_notice_dismissed');
+                }
+              }}
+              className={`text-xs px-4 py-1.5 rounded-xl font-bold flex items-center gap-1.5 select-none cursor-pointer transition-all border ${
+                showSyncNotice
+                  ? 'bg-slate-850 text-emerald-400 border-emerald-500/30'
+                  : 'bg-emerald-950/30 text-emerald-350 border-emerald-900/40 hover:bg-emerald-950/60'
+              }`}
+            >
+              📡 {showSyncNotice ? 'Hide Sync Hub' : '📡 Open Sync Hub'}
+            </button>
+
+            <button
               id="toggle-user-guide-btn"
               onClick={() => setShowUserGuide(!showUserGuide)}
               className={`text-xs px-4 py-1.5 rounded-xl font-bold flex items-center gap-1.5 select-none cursor-pointer transition-all border ${
@@ -780,7 +994,7 @@ export default function App() {
                   <p className="text-xs text-slate-400 leading-relaxed">
                     • <strong className="text-slate-300">Specifications Section:</strong> Keep track of soft-close hinges, board materials (Melawood, PG Bison), door types, and stone suppliers.
                     <br />
-                    • <strong className="text-slate-300">Site-Notes Amendments:</strong> Correct wrong measurements or specific client requests (like Fatima’s secret drawer) instantly.
+                    • <strong className="text-slate-300">Site-Notes Amendments:</strong> Correct wrong measurements or specific client requests (like a secret wardrobe compartment) instantly.
                     <br />
                     • <strong className="text-slate-300">Visual Vault:</strong> Preview active CAD drawings or 3D renderings to keep the cabinet-making team aligned.
                   </p>
@@ -828,48 +1042,90 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              {/* OLD BROWSER CACHE RECOVERY TRIGGER */}
-              {jobs.length > 7 && (
-                <div className="bg-amber-950/20 border border-amber-500/20 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-amber-200">
-                  <div className="flex items-start gap-3">
-                    <span className="text-xl leading-none mt-0.5 animate-bounce">⚠️</span>
-                    <div>
-                      <span className="font-extrabold text-sm block text-amber-300">Previous Testing Cache Running ({jobs.length} Clients Detected)</span>
-                      <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                        Your browser is currently displaying the testing data cached from your previous session. 
-                        To immediately view the clean finished app versions: Click <strong>"📊 Load 7-Client Sandbox Demo"</strong> to test Gerard and Fatima's specs, or click <strong>"🧹 Wipe to Clean Workspace"</strong> to set up a blank slate for David's real work.
+              {/* TEAM CLOUD SYNC & CLIENT PRESENTATION CONTROL CENTER */}
+              {showSyncNotice && (
+                <div className={`p-6 rounded-[24px] border ${isSleekTheme ? 'bg-[#0f1422] border-indigo-500/20 text-slate-100' : 'bg-[#f0f4f8] border-indigo-200 text-slate-800'} shadow-xl relative overflow-hidden transition-all duration-300`}>
+                  {/* Glowing background gradient elements for premium custom-design feel */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl pointer-events-none rounded-full" />
+                  
+                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+                    <div className="space-y-2 max-w-3xl">
+                      <div className="flex items-center gap-2 text-indigo-400">
+                        <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                        <span className="font-extrabold text-xs uppercase tracking-wider font-sans">Kitchen Lab Sync Hub</span>
+                      </div>
+                      <h3 className="text-md sm:text-lg font-sans font-black tracking-tight flex items-center gap-2">
+                        📡 Cloud Sync Status & Device Co-ordination Guide
+                      </h3>
+                      <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                        Kitchen Lab OS is now backed by a persistent <strong>Firestore Cloud Database</strong>. 
+                        Both you and Dave can log in and view, create, or update cabinet specifications and payments.
                       </p>
+                      
+                      {/* Interactive Help Checklist in collapsible/readable style */}
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                        <div className={`p-3.5 rounded-xl border ${isSleekTheme ? 'bg-slate-950/45 border-slate-900' : 'bg-white border-slate-200'} space-y-1.5`}>
+                          <span className="text-xs font-extrabold block text-indigo-400">❓ Why couldn't I see Dave's inputs?</span>
+                          <span className="text-[11px] block text-slate-400 leading-relaxed">
+                            Dave's phone is likely running an <strong>older cached offline version</strong>. Mobile browsers do not auto-reload frequently. Have Dave open the app link on his phone and perform a <strong>full finger pull-to-refresh (reload) once</strong>! This installs the cloud sync client, instantly migrates his offline listings, and links your devices live.
+                          </span>
+                        </div>
+                        
+                        <div className={`p-3.5 rounded-xl border ${isSleekTheme ? 'bg-slate-950/45 border-slate-900' : 'bg-white border-slate-200'} space-y-1.5`}>
+                          <span className="text-xs font-extrabold block text-indigo-400">🔗 How do we prevent demo glitches going forward?</span>
+                          <span className="text-[11px] block text-slate-400 leading-relaxed">
+                            Stop using the unstable Dev/Sandbox URL! Always use and share the **Stable Shared App URL** below. This URL never sleeps and is optimized for flawless performance during client presentations.
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Display stable URL */}
+                      <div className={`mt-3 p-3 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-3 ${isSleekTheme ? 'bg-slate-950/60 border-slate-900' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className="flex flex-col text-left w-full">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">STABLE PRESENTATION WEB LINK</span>
+                          <span className="text-xs font-mono font-bold text-indigo-400 select-all truncate mt-0.5">https://ais-pre-wftnbto5nhvufmuv4sesd6-933896873270.europe-west2.run.app</span>
+                        </div>
+                        <button
+                          onClick={handleCopyStableUrl}
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-[11px] px-3.5 py-2 rounded-lg transition-all shrink-0 w-full sm:w-auto text-center cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          📋 Copy Link
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row bg-slate-900 border border-slate-800 p-1.5 rounded-xl shrink-0 gap-1.5 w-full md:w-auto">
-                    <button
-                      id="fix-to-demo-seeder-btn"
-                      onClick={() => {
-                        handleSeedDemoData(
-                          getSevenDemoClients(),
-                          getSevenDemoTasks(),
-                          getSevenDemoFinancials(),
-                          getSevenDemoFiles(),
-                          getSevenDemoNotes()
-                        );
-                        setActiveDatabaseMode('demo');
-                        triggerAutomationNotification("📊 Loaded exactly 7 Demo Clients in various stages!");
-                      }}
-                      className="text-xs px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-lg cursor-pointer transition-all shrink-0 text-center"
-                    >
-                      📊 Load 7-Client Demo
-                    </button>
-                    <button
-                      id="fix-to-clean-slate-btn"
-                      onClick={() => {
-                        handleResetCleanState();
-                        setActiveDatabaseMode('live');
-                        triggerAutomationNotification("🧹 Empty Workspace Ready.");
-                      }}
-                      className="text-xs px-3.5 py-2 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-rose-400 font-bold rounded-lg cursor-pointer transition-all shrink-0 text-center border border-slate-800"
-                    >
-                      🧹 Wipe to Clean Workspace
-                    </button>
+
+                    <div className="flex flex-col sm:flex-row lg:flex-col bg-slate-950/50 border border-slate-900 p-2 rounded-2xl shrink-0 gap-2 w-full lg:w-64">
+                      <button
+                        onClick={handleForceUploadLocalData}
+                        disabled={isSyncingLocal}
+                        className={`text-xs px-4 py-3 font-extrabold rounded-xl cursor-pointer transition-all shrink-0 text-center flex items-center justify-center gap-2 w-full ${
+                          isSyncingLocal 
+                            ? 'bg-slate-800 text-slate-500' 
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                        }`}
+                      >
+                        {isSyncingLocal ? (
+                          <>
+                            <span className="h-3 w-3 border-2 border-slate-500 border-t-white rounded-full animate-spin" />
+                            Syncing Cloud...
+                          </>
+                        ) : (
+                          <>
+                            📥 Force Upload Local Items
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('kl_sync_notice_dismissed', 'true');
+                          setShowSyncNotice(false);
+                          triggerAutomationNotification("💡 Control center dismissed. You can open instructions anytime using the User Manual above!");
+                        }}
+                        className="text-xs px-4 py-3 bg-slate-950 hover:bg-slate-900 hover:text-slate-200 text-slate-400 font-bold rounded-xl cursor-pointer transition-all shrink-0 text-center border border-slate-900 w-full"
+                      >
+                        ✕ Dismiss Sync Panel
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

@@ -110,7 +110,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   required
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  placeholder="e.g. Gerard (Uitsig), Charl Coetzer"
+                  placeholder="e.g. Pinecrest Scullery, Driftwood Townhouse"
                   className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
                 />
               </div>
@@ -144,7 +144,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. gerard@example.co.za"
+                  placeholder="e.g. client@example.co.za"
                   className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
                 />
               </div>

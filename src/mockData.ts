@@ -37,10 +37,10 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-002',
-    clientName: 'Gerard (Uitsig)',
-    phone: '27833465449',
-    email: 'gerard.uitsig@gmail.com',
-    address: 'Eldoraigne, Centurion, 0157, South Africa',
+    clientName: 'Alpha Estates Scullery',
+    phone: '27105550190',
+    email: 'projects@alphaestatescullery.co.za',
+    address: 'Plot 104, Oakwood Manor, Centurion, 0157, South Africa',
     area: 'Eldoraigne',
     leadSource: 'Referral',
     status: '10 Installation Scheduled',
@@ -49,12 +49,12 @@ export const INITIAL_JOBS: Job[] = [
     statusSince: '2026-05-23T09:15:00Z',
     quoteValue: 44700,
     depositReceived: 26820, // 60% Deposit Received
-    comments: 'Project categories: Scullery, Braai. Soft Close and Ball Bearing hardware features specified.',
-    siteNotes: 'Ensure ball bearing runners are loaded in morning batch.',
+    comments: 'Project categories: Scullery, Braai room prep. Soft Close and Heavy Duty Ball Bearing hardware features specified.',
+    siteNotes: 'Ensure heavy duty ball bearing runners are loaded in morning batch for deep pantry slide drawers.',
     specs: {
       boardType: 'Moisture-resistant high-density MDF (18mm)',
       boardSupplier: 'PG Bison',
-      doorType: 'SupaWood Frameless',
+      doorType: 'SupaWood Frameless Matte Charcoal',
       doorSupplier: 'Kitchen Lab In-house',
       softClose: true,
       ledLighting: false,
@@ -71,10 +71,10 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-003',
-    clientName: 'Charl Coetzer',
-    phone: '27790581861',
-    email: 'charl.coetzer@outlook.com',
-    address: 'Hennopspark, Centurion, 0157, South Africa',
+    clientName: 'Coastal Driftwood Townhouse',
+    phone: '27105550244',
+    email: 'coastal.driftwood@fictional.com',
+    address: 'Unit 42, Riverview Close, Centurion, 0157, South Africa',
     area: 'Hennopspark',
     leadSource: 'Referral',
     status: '10 Installation Scheduled',
@@ -84,12 +84,12 @@ export const INITIAL_JOBS: Job[] = [
     installationDate: '2026-05-25',
     quoteValue: 45000,
     depositReceived: 27000, // 60% Deposit Received
-    comments: 'Project category: Kitchen. Fit sink after plumber does first-fix hookup.',
-    siteNotes: 'Coordinate with plumber team on site for timing of sink installation.',
+    comments: 'Project category: Modern Duplex Kitchen. Linear grain slab drift wood look with matte finishes.',
+    siteNotes: 'Coordinate with plumber team on site for timing of sink installation to avoid scratching quartz.',
     specs: {
       boardType: 'Melamine Faced Board (18mm)',
       boardSupplier: 'PG Bison MelaWood',
-      doorType: 'Linear Grain Slab',
+      doorType: 'Linear Grain Slab Driftwood Look',
       doorSupplier: 'Kitchen Lab stock',
       softClose: true,
       ledLighting: false,
@@ -106,21 +106,21 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-004',
-    clientName: 'Johan De Ru',
-    phone: '27834318073',
-    email: 'johan.deru@webmail.co.za',
-    address: 'Montana, Pretoria, 0182, South Africa',
+    clientName: 'Prestige Obsidian Kitchen & Scullery',
+    phone: '27105550388',
+    email: 'prestige.obsidian@fictional.com',
+    address: '77 Montana Peak, Pretoria, 0182, South Africa',
     area: 'Montana',
     leadSource: 'Referral',
     status: '9 Production',
     nextAction: 'In Production',
-    health: 'Needs Attention', // Marked as delayed in CSV, so "Needs Attention" or "At Risk" is suitable
+    health: 'Needs Attention',
     statusSince: '2026-05-23T12:30:00Z',
     installationDate: '2026-06-01',
     quoteValue: 108240,
     depositReceived: 64944, // 60% Deposit Received
-    comments: 'Project categories: Kitchen, Scullery. Caraz finishes, black kicks & handles. LED lights for kicks & display. Bulkhead & 3 pendulum lights. Slats Gelmar Maple. Iceberg white display with clear glass.',
-    siteNotes: 'Ceiling height 2600mm. Top cabinet height 2450mm. Bring pendant light mounting brackets.',
+    comments: 'Project categories: Open-plan Kitchen, Scullery. Caraz obsidian finishes, black kickboards and premium handles. LED track light strips for kicks & displays. Custom Bulkhead structure.',
+    siteNotes: 'Ceiling height is 2600mm. Top cabinet height is 2450mm. Remember to bring heavy-duty pendant light mounting brackets.',
     specs: {
       boardType: 'Moisture-resistant MDF',
       boardSupplier: 'Sonae Arauco',
@@ -141,10 +141,10 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-005',
-    clientName: 'Summerhaze',
-    phone: '27843040022',
-    email: 'projects@summerhaze.co.za',
-    address: 'Sandton, Johannesburg, 2196, South Africa',
+    clientName: 'Grandview Heights Luxury Penthouse',
+    phone: '27105550410',
+    email: 'penthouses@grandviewheights.co.za',
+    address: 'Tower A Penthouse, Sandton Skylines, Sandton, 2196, South Africa',
     area: 'Sandton',
     leadSource: 'Referral',
     status: '7 Awaiting Deposit',
@@ -154,19 +154,19 @@ export const INITIAL_JOBS: Job[] = [
     installationDate: '2026-06-15',
     quoteValue: 375000,
     depositReceived: 0, // No Deposit Received
-    comments: 'Project category: Full House. High priority high value client.',
-    siteNotes: 'Extremely detailed build. Awaiting signature and deposit clear before initiating cabinetry cutting lists.',
+    comments: 'Project category: Full House Premium Cabinetry. Ultra-high modern value client. Demands highest level craftsmanship.',
+    siteNotes: 'Extremely detailed build specs. Awaiting signed final CAD prints and deposit clearance to schedule board cutting program.',
     specs: {
       boardType: 'Luxury Premium Board',
       boardSupplier: 'Egger South Africa',
-      doorType: 'Bespoke Handleless Matte Lacque',
+      doorType: 'Bespoke Handleless Matte Lacquer Accent',
       doorSupplier: 'Kitchen Lab premium division',
       softClose: true,
       ledLighting: true,
       pushToOpen: true,
       glassDoors: true,
       stoneSupplier: 'Caesarstone SA',
-      stoneColour: 'Empira White',
+      stoneColour: 'Empira White Duo',
       stoneThickness: '30mm',
       oven: 'Siemens Integrated Series',
       hob: 'Siemens Induction Hob',
@@ -176,24 +176,24 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-006',
-    clientName: 'Fatima',
-    phone: '27732110164',
-    email: 'fatima.erasmia@mweb.co.za',
-    address: 'Erasmia, Centurion, 0183, South Africa',
+    clientName: 'Secret Latch Wardrobe Suite',
+    phone: '27105550577',
+    email: 'wardrobesuite@secretlatch.com',
+    address: 'Block E, Erasmia Ridge Estate, Centurion, 0183, South Africa',
     area: 'Erasmia',
     leadSource: 'Referral',
     status: '7 Awaiting Deposit',
     nextAction: 'Follow Up Deposit',
-    health: 'Needs Attention', // Delayed in CSV
+    health: 'Needs Attention',
     statusSince: '2026-05-23T15:10:00Z',
     quoteValue: 90000,
     depositReceived: 0,
-    comments: 'Project categories: TV Room, Kitchenette, Main Bedroom Dresser, Walk-in Wardrobe. Special request: Secret Compartment inside walk-in wardrobe cupboard.',
-    siteNotes: 'Need subtle hidden touch latch system for secret compartment.',
+    comments: 'Project categories: Custom TV Console, Kitchenette, Master Dresser, Walk-in Wardrobe. Special request: Concealed document drawer built inside Wardrobe 4.',
+    siteNotes: 'Requires a sleek magnetic touch latch system for the concealed jewelry and documents shelf.',
     specs: {
       boardType: 'MDF Core Supawood',
       boardSupplier: 'PG Bison',
-      doorType: 'Shaker Painted Style',
+      doorType: 'Shaker Painted Clean Style',
       doorSupplier: 'Kitchen Lab Workshop',
       softClose: true,
       ledLighting: true,
@@ -210,20 +210,20 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-007',
-    clientName: 'Jabu Mahlangu',
-    phone: '27824422780',
-    email: 'jabu.mahlangu@gov.za',
+    clientName: 'Summerset Estate TV Lounge',
+    phone: '27105550622',
+    email: 'lounge@summersetestate.co.za',
     address: 'Summerset Estate, Midrand, 1682, South Africa',
     area: 'Summerset Estate',
     leadSource: 'Referral',
     status: '7 Awaiting Deposit',
     nextAction: 'Follow Up Deposit',
-    health: 'Needs Attention', // Delayed in CSV
+    health: 'Needs Attention',
     statusSince: '2026-05-23T16:00:00Z',
     quoteValue: 29400,
     depositReceived: 0,
-    comments: 'Project categories: TV Room, Bar, Entrance Hall.',
-    siteNotes: 'Floating TV cabinet design with reinforced rear support studs.',
+    comments: 'Project categories: TV Room, Bar unit, Entrance Hall layout.',
+    siteNotes: 'Floating TV cabinet design with reinforced rear support structural timber studs.',
     specs: {
       boardType: 'Veneered Oak MDF',
       boardSupplier: 'PG Bison Wood finishes',
@@ -244,9 +244,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-008',
-    clientName: 'Jacqui Monteiro',
-    phone: '27658110060',
-    email: 'jacqui.m@cge.co.za',
+    clientName: 'BIC Built-In Wardrobes',
+    phone: '27105550800',
+    email: 'bics@residential-upgrade.com',
     address: 'CGE Estate, Midrand, South Africa',
     area: 'CGE',
     leadSource: 'Referral',
@@ -256,8 +256,8 @@ export const INITIAL_JOBS: Job[] = [
     statusSince: '2026-05-23T16:50:00Z',
     quoteValue: 31300,
     depositReceived: 18780, // 60% Deposit Paid
-    comments: 'Project category: BIC (Built-in Cupboards).',
-    siteNotes: 'Check ceiling levels across wardobe run during final measurements. Standard height is 2400.',
+    comments: 'Project category: BIC (Built-in Cupboards) suite replacements.',
+    siteNotes: 'Check ceiling levels across wardrobe run during final measurements. Standard height is 2400.',
     specs: {
       boardType: 'MelaWood Linear Finishes',
       boardSupplier: 'PG Bison',
@@ -278,9 +278,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-009',
-    clientName: 'Elaine Reed',
-    phone: '27829253393',
-    email: 'elaine.reed@gmail.com',
+    clientName: 'Greenvalley Estate Kitchen',
+    phone: '27105550911',
+    email: 'kitchen.upgrade@greenvalleyestate.co.za',
     address: 'CGE Estate, Midrand, South Africa',
     area: 'CGE',
     leadSource: 'Referral',
@@ -290,8 +290,8 @@ export const INITIAL_JOBS: Job[] = [
     statusSince: '2026-05-23T17:15:00Z',
     quoteValue: 140000, // Estimated Quote Value populated here
     depositReceived: 0,
-    comments: 'Project category: Kitchen. Initial inquiry from high-value estate owner.',
-    siteNotes: 'Standard kitchen layout request. Need scheduling first design consultation.',
+    comments: 'Project category: Modular Kitchen. Initial inquiry from high-value estate owner.',
+    siteNotes: 'Standard kitchen layout request. Need scheduling first design consultation next Monday.',
     specs: {
       boardType: 'Moisture Resistant Particle Board',
       boardSupplier: 'PG Bison',
@@ -312,9 +312,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-010',
-    clientName: 'Robin Stewart',
-    phone: '27828997432',
-    email: 'robin.stewart@absamail.co.za',
+    clientName: 'Moreleta Classic Shaker',
+    phone: '27105551001',
+    email: 'classicshaker@fictional.com',
     address: 'Moreleta Park, Pretoria, 0181, South Africa',
     area: 'Moreletta',
     leadSource: 'Referral',
@@ -324,8 +324,8 @@ export const INITIAL_JOBS: Job[] = [
     statusSince: '2026-05-23T17:45:00Z',
     quoteValue: 180000, // Estimated value used as quote value
     depositReceived: 0,
-    comments: 'Project categories: Kitchen, Scullery.',
-    siteNotes: 'Client wants classic shaker style painted with modern gold handles.',
+    comments: 'Project categories: Painted Classic Shaker Kitchen, Integrated Scullery.',
+    siteNotes: 'Client wants classic shaker style painted with modern gold handles. Check cabinet gaps standard.',
     specs: {
       boardType: 'Supawood MDF',
       boardSupplier: 'Sonae Arauco',
@@ -346,9 +346,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-011',
-    clientName: 'Ilse Doyer',
-    phone: '27834028224',
-    email: 'ilse.doyer@up.ac.za',
+    clientName: 'Irene Wardrobe BIC Suite',
+    phone: '27105551101',
+    email: 'irene.bics@fictional.com',
     address: 'Irene, Centurion, 0157, South Africa',
     area: 'Irene',
     leadSource: 'Referral',
@@ -358,8 +358,8 @@ export const INITIAL_JOBS: Job[] = [
     statusSince: '2026-05-23T18:00:00Z',
     quoteValue: 0,
     depositReceived: 0,
-    comments: 'Project category: BIC. Scheduled call for wardrobe design needs.',
-    siteNotes: 'Liaise over standard bedroom wardrobe configurations.',
+    comments: 'Project category: Custom Bedroom BIC. Scheduled call for wardrobe design layout.',
+    siteNotes: 'Liaise over standard bedroom wardrobe configurations and hanging rail preferences.',
     specs: {
       boardType: 'PG Bison BisonBord',
       boardSupplier: 'PG Bison',
@@ -380,10 +380,10 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-012',
-    clientName: 'Fred Ferreira',
-    phone: '27825618660',
-    email: 'fred.f@lantic.co.za',
-    address: 'Silver Lakes Golf Estate, Pretoria, 0081, South Africa',
+    clientName: 'Legacy Solid Mahogany Home Bar',
+    phone: '27105550611',
+    email: 'entertainment@legacygolfestate.co.za',
+    address: 'Villa 12, Silver Lakes Golf Estate, Pretoria, 0081, South Africa',
     area: 'Silver Lakes',
     leadSource: 'Referral',
     status: '1 First Contact',
@@ -392,7 +392,7 @@ export const INITIAL_JOBS: Job[] = [
     statusSince: '2026-05-23T18:15:00Z',
     quoteValue: 0,
     depositReceived: 0,
-    comments: 'Project category: Bar. Elite client in security golf estate. Requires high-end wood panel styling.',
+    comments: 'Project category: Bar. Solid mahogany premium custom board panels and entertainment styling.',
     siteNotes: 'Requires premium custom timber craftsmanship matching existing solid mahogany lounge style.',
     specs: {
       boardType: 'Veneer Faced Moisture Board',
@@ -414,9 +414,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-013',
-    clientName: 'Jax Ponquette',
-    phone: '27842828308',
-    email: 'jax.pon@vodamail.co.za',
+    clientName: 'Eldoraigne Entertainment Bar',
+    phone: '27105551301',
+    email: 'entertainment.bar@fictional.com',
     address: 'Eldoraigne, Centurion, 0157, South Africa',
     area: 'Eldoraigne',
     leadSource: 'Referral',
@@ -448,9 +448,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-014',
-    clientName: 'Jacques Tredoux',
-    phone: '27732458307',
-    email: 'jacques.tredoux@gmail.com',
+    clientName: 'Elardus Park Bedroom BICs',
+    phone: '27105551401',
+    email: 'bedroom.bics@fictional.com',
     address: 'Elardus Park, Pretoria, 0181, South Africa',
     area: 'Elardus Park',
     leadSource: 'Referral',
@@ -482,9 +482,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-015',
-    clientName: 'Mariette Van Heerden',
-    phone: '27833240331',
-    email: 'mariette.vh@outlook.co.za',
+    clientName: 'Centurion Modern Reface',
+    phone: '27105551501',
+    email: 'modern.reface@fictional.com',
     address: 'Eldoraigne, Centurion, 0157, South Africa',
     area: 'Eldoraigne',
     leadSource: 'Referral',
@@ -516,9 +516,9 @@ export const INITIAL_JOBS: Job[] = [
   },
   {
     id: 'KL-016',
-    clientName: 'Farhana',
-    phone: '27837975117',
-    email: 'farhana.estate@lantic.net',
+    clientName: 'Raslouw 20-Unit Masterplan Complex',
+    phone: '27105551601',
+    email: 'properties.raslouw@fictional.com',
     address: 'Raslouw, Centurion, 0157, South Africa',
     area: 'Raslouw',
     leadSource: 'Referral',
@@ -552,8 +552,8 @@ export const INITIAL_JOBS: Job[] = [
 
 export const INITIAL_TASKS: Task[] = [
   // Setup standard workflow tasks across historical projects
-  // KL-002: Gerard (Installation Scheduled)
-  { id: 'T201', jobId: 'KL-002', stage: 'Design', taskName: 'Design Outline approved by Gerard', complete: true },
+  // KL-002: Alpha Estates Scullery
+  { id: 'T201', jobId: 'KL-002', stage: 'Design', taskName: 'Design Outline approved by Project Architect', complete: true },
   { id: 'T202', jobId: 'KL-002', stage: 'Design', taskName: 'Detailed laser site survey verified', complete: true },
   { id: 'T203', jobId: 'KL-002', stage: 'Financials', taskName: 'Quote sent R44,700', complete: true },
   { id: 'T204', jobId: 'KL-002', stage: 'Financials', taskName: 'Secure 60% Deposit (R26,820) cleared', complete: true },
@@ -562,47 +562,47 @@ export const INITIAL_TASKS: Task[] = [
   { id: 'T207', jobId: 'KL-002', stage: 'Installation', taskName: 'Transport load allocated & scheduled', complete: false },
   { id: 'T208', jobId: 'KL-002', stage: 'Installation', taskName: 'Assemble on site & level carcasses', complete: false },
 
-  // KL-003: Charl Coetzer (Installation Scheduled)
+  // KL-003: Coastal Driftwood Townhouse
   { id: 'T301', jobId: 'KL-003', stage: 'Design', taskName: 'Client layout design signed off', complete: true },
   { id: 'T302', jobId: 'KL-003', stage: 'Financials', taskName: '60% Deposit (R27,000) cleared', complete: true },
   { id: 'T303', jobId: 'KL-003', stage: 'Production', taskName: 'Carcasses assembled', complete: true },
   { id: 'T304', jobId: 'KL-003', stage: 'Installation', taskName: 'Load and dispatch delivery van', complete: true },
   { id: 'T305', jobId: 'KL-003', stage: 'Installation', taskName: 'Fit sink immediately after plumber completes connection', complete: false },
 
-  // KL-004: Johan De Ru (In Production, Delayed)
+  // KL-004: Prestige Obsidian Kitchen & Scullery
   { id: 'T401', jobId: 'KL-004', stage: 'Design', taskName: 'Slab layout Gelmar Maple and Iceberg approved', complete: true },
   { id: 'T402', jobId: 'KL-004', stage: 'Financials', taskName: 'Contract Value R108,240, Deposit R64,944 received', complete: true },
   { id: 'T403', jobId: 'KL-004', stage: 'Production', taskName: 'Produce custom high-gloss kicks with LED profile recess', complete: false },
   { id: 'T404', jobId: 'KL-004', stage: 'Production', taskName: 'Acquire Gelmar Maple slats & clear glass insert panels', complete: false },
   { id: 'T405', jobId: 'KL-004', stage: 'Production', taskName: 'Source 3 pendulum lights and custom bulkhead sheets', complete: false },
 
-  // KL-005: Summerhaze (Awaiting Deposit)
+  // KL-005: Grandview Heights Luxury Penthouse
   { id: 'T501', jobId: 'KL-005', stage: 'Design', taskName: '3D high-fidelity layout rendering approved', complete: true },
   { id: 'T502', jobId: 'KL-005', stage: 'Financials', taskName: 'Send comprehensive full-house proposal (R375,000)', complete: true },
   { id: 'T503', jobId: 'KL-005', stage: 'Financials', taskName: 'Clear 60% booking deposit (R225,000) to schedule factory board delivery', complete: false },
 
-  // KL-006: Fatima (Awaiting Deposit)
+  // KL-006: Secret Latch Wardrobe Suite
   { id: 'T601', jobId: 'KL-006', stage: 'Design', taskName: 'TV room & wardrobe design with Secret Compartment signed off', complete: true },
   { id: 'T602', jobId: 'KL-006', stage: 'Financials', taskName: 'SLA agreement dispatched (R90,000)', complete: true },
   { id: 'T603', jobId: 'KL-006', stage: 'Financials', taskName: 'Wait for down-payment to activate cabinetry queue', complete: false },
 
-  // KL-007: Jabu Mahlangu (Awaiting Deposit)
+  // KL-007: Summerset TV Lounge
   { id: 'T701', jobId: 'KL-007', stage: 'Design', taskName: 'Bar layout & Entrance floating cabinet 3D mockups complete', complete: true },
   { id: 'T702', jobId: 'KL-007', stage: 'Financials', taskName: 'Quote sent (R29,400)', complete: true },
   { id: 'T703', jobId: 'KL-007', stage: 'Financials', taskName: 'Awaiting deposit', complete: false },
 
-  // KL-008: Jacqui Monteiro (Deposit Paid)
+  // KL-008: BIC Built-In Wardrobes
   { id: 'T801', jobId: 'KL-008', stage: 'Design', taskName: 'Wardrobe BIC outline approved', complete: true },
   { id: 'T808', jobId: 'KL-008', stage: 'Financials', taskName: 'Clear R18,780 booking deposit', complete: true },
   { id: 'T803', jobId: 'KL-008', stage: 'Design', taskName: 'Perform final on-site millimetre precision measurements', complete: false },
 
-  // KL-010: Robin Stewart (Design Phase)
+  // KL-010: Moreleta Classic Shaker
   { id: 'T1001', jobId: 'KL-010', stage: 'Design', taskName: 'Capture wishlist and scullery configurations', complete: true },
   { id: 'T1002', jobId: 'KL-010', stage: 'Design', taskName: 'Draft initial floor layouts', complete: true },
   { id: 'T1003', jobId: 'KL-010', stage: 'Design', taskName: 'Implement requested customer design amendments', complete: false },
 
-  // KL-016: Farhana (Qualifying Lead)
-  { id: 'T1601', jobId: 'KL-016', stage: 'Design', taskName: 'Analyze Dave\'s 20-unit masterplan notes', complete: true },
+  // KL-016: Raslouw 20-Unit Masterplan Complex
+  { id: 'T1601', jobId: 'KL-016', stage: 'Design', taskName: 'Analyze 20-unit masterplan notes', complete: true },
   { id: 'T1602', jobId: 'KL-016', stage: 'Design', taskName: 'Schedule complex site visit with David and Mark to verify scope bounds', complete: false }
 ];
 
@@ -614,7 +614,7 @@ export const INITIAL_FINANCIALS: FinancialRecord[] = [
     type: 'payment',
     amount: 26820,
     date: '2026-05-23',
-    description: 'Received 60% production deposit (Gerard Uitsig)',
+    description: 'Received 60% production deposit for Alpha Estates Scullery',
     category: 'Booking Deposit Received'
   },
   {
@@ -623,7 +623,7 @@ export const INITIAL_FINANCIALS: FinancialRecord[] = [
     type: 'payment',
     amount: 27000,
     date: '2026-05-23',
-    description: 'Received 60% booking deposit (Charl Coetzer)',
+    description: 'Received 60% booking deposit for Coastal Driftwood Townhouse',
     category: 'Booking Deposit Received'
   },
   {
@@ -632,7 +632,7 @@ export const INITIAL_FINANCIALS: FinancialRecord[] = [
     type: 'payment',
     amount: 64944,
     date: '2026-05-23',
-    description: 'Received 60% production deposit (Johan De Ru)',
+    description: 'Received 60% production deposit for Prestige Obsidian Kitchen',
     category: 'Booking Deposit Received'
   },
   {
@@ -641,7 +641,7 @@ export const INITIAL_FINANCIALS: FinancialRecord[] = [
     type: 'payment',
     amount: 18780,
     date: '2026-05-23',
-    description: 'Received 60% production deposit (Jacqui Monteiro)',
+    description: 'Received 60% production deposit for BIC Built-In Wardrobes',
     category: 'Booking Deposit Received'
   },
   // Add some realistic material and hardware expenses to show project health dynamics
@@ -670,7 +670,7 @@ export const INITIAL_FILES: VaultFile[] = [
     id: 'V101',
     jobId: 'KL-004',
     type: 'render',
-    name: 'Montana_Kitchen_Bulkhead_Concept.png',
+    name: 'Obsidian_Kitchen_Bulkhead_Concept.png',
     url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop',
     uploadedAt: '2026-05-23T11:00:00Z'
   },
@@ -697,7 +697,7 @@ export const INITIAL_NOTES: JobNote[] = [
     id: 'N201',
     jobId: 'KL-002',
     author: 'David (Creative Director)',
-    content: 'Gerard wants to ensure the Scullery integrates smoothly into the Braai entertainment path. Mark must pack standard waterproof trim buffers.',
+    content: 'Client wants to ensure the Scullery integrates smoothly into the Braai entertainment path. Mark must pack standard waterproof trim buffers.',
     createdAt: '2026-05-23T10:00:00Z'
   },
   {
@@ -718,7 +718,7 @@ export const INITIAL_NOTES: JobNote[] = [
     id: 'N601',
     jobId: 'KL-006',
     author: 'David (Creative Director)',
-    content: 'Fatima requested a highly secure secret compartment inside the wardrobe backing. Keep it concealed behind a push-to-open faux skirt panel.',
+    content: 'Customer requested a highly secure secret compartment inside the wardrobe backing. Keep it concealed behind a push-to-open faux skirt panel.',
     createdAt: '2026-05-23T15:20:00Z'
   }
 ];
