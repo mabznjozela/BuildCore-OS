@@ -30,13 +30,8 @@ import {
   Smartphone,
   WifiOff
 } from 'lucide-react';
-import { 
-  getSevenDemoClients, 
-  getSevenDemoTasks, 
-  getSevenDemoFinancials, 
-  getSevenDemoFiles, 
-  getSevenDemoNotes 
-} from '../demoSeeder';
+// Demo seeder removed for production build
+
 
 interface NicheDetail {
   id: string;
@@ -715,14 +710,14 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
         </div>
       </div>
 
-      {/* Segment 5: Interactive App User Guide & Sandbox Seeding Controls */}
+      {/* Segment 5: Workspace Maintenance Controls */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-8 border-t border-slate-900 mt-8">
         
-        {/* Left column: Database sandboxes / seeder */}
+        {/* Left column: Maintenance tools */}
         <div className="space-y-4">
           <div className="p-1">
-            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono">SME Database Sandboxes</h3>
-            <p className="text-xs text-slate-400 mt-1">Configure your active client profile, populate demo client datasets, or setup clean empty workspaces for live usage.</p>
+            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono">Workspace Maintenance</h3>
+            <p className="text-xs text-slate-400 mt-1">Manage active workspace status, or flush local caches for pristine operations.</p>
           </div>
 
           <div className="bg-[#111625] border border-slate-800/80 rounded-2xl p-5 space-y-4">
@@ -733,46 +728,25 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-450 opacity-75 animate-duration-1000"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-550"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-450 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-555"></span>
                 </span>
-                <span className="text-[10px] text-emerald-400 font-mono font-bold">OFFLINE BACKEND</span>
+                <span className="text-[10px] text-emerald-400 font-mono font-bold">ONLINE STATUS</span>
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">LocalStorage SME Count:</span>
+                <span className="text-slate-400">Active Record Count:</span>
                 <span className="font-extrabold text-[#7c3aed] bg-[#7c3aed]/10 border border-[#7c3aed]/20 px-2.5 py-0.5 rounded-lg font-mono">{currentJobsCount} Clients</span>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
-                This applet implements offline-first data serialization. All clients, materials, financial legers, and notes reside securely inside David's device browser cache.
+                This applet implements offline-first data serialization. All client specifications, financial legers, and notes reside securely inside your browser's persistent storage.
               </p>
             </div>
 
-            {/* Sandbox triggers */}
-            <div className="space-y-2.5 pt-3 border-t border-slate-800/40">
-              <button
-                id="seed-demo-data-btn"
-                onClick={() => {
-                  if (onSeedDemoData) {
-                    onSeedDemoData(
-                      getSevenDemoClients(),
-                      getSevenDemoTasks(),
-                      getSevenDemoFinancials(),
-                      getSevenDemoFiles(),
-                      getSevenDemoNotes()
-                    );
-                    setDbFeedback('demo');
-                    setTimeout(() => setDbFeedback(null), 3000);
-                  }
-                }}
-                className="w-full flex items-center justify-center gap-2 text-xs bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-4 rounded-xl cursor-pointer font-bold transition-all active:scale-95 select-none"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Seed 7-Client Premium Demo DB
-              </button>
-
+            {/* Maintenance triggers */}
+            <div className="space-y-2.5 pt-3 border-t border-[#111625]">
               <button
                 id="reset-buildcore-btn"
                 onClick={() => {
@@ -782,10 +756,10 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                     setTimeout(() => setDbFeedback(null), 3000);
                   }
                 }}
-                className="w-full flex items-center justify-center gap-2 text-xs bg-slate-900 hover:bg-slate-850 hover:text-slate-200 border border-slate-800 text-slate-400 py-2.5 px-4 rounded-xl cursor-pointer font-extrabold transition-all active:scale-95 select-none"
+                className="w-full flex items-center justify-center gap-2 text-xs bg-slate-900 override:text-rose-400 hover:bg-slate-850 border border-slate-800 text-slate-350 py-2.5 px-4 rounded-xl cursor-pointer font-extrabold transition-all active:scale-95 select-none"
               >
                 <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                Wipe to Empty App (BuildCore)
+                Wipe Local & Cloud Database (Reset to Empty State)
               </button>
             </div>
 
@@ -796,21 +770,15 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className={`p-3 rounded-xl border text-xs leading-normal flex items-start gap-2 ${
-                    dbFeedback === 'demo'
-                      ? 'bg-indigo-950/45 border-indigo-900/40 text-indigo-200'
-                      : 'bg-emerald-950/45 border-emerald-900/40 text-emerald-200'
-                  }`}
+                  className="p-3 rounded-xl border text-xs leading-normal flex items-start gap-2 bg-emerald-950/45 border-emerald-900/40 text-emerald-200"
                 >
-                  <CheckCircle className={`h-4 w-4 shrink-0 mt-0.5 ${dbFeedback === 'demo' ? 'text-indigo-400' : 'text-emerald-400'}`} />
+                  <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-emerald-400" />
                   <div>
                     <span className="font-extrabold block">
-                      {dbFeedback === 'demo' ? '✓ Premium Demo Seeded' : '✓ Base Resetted'}
+                      ✓ Workspace Reset Complete
                     </span>
-                    <p className="text-[10px] text-slate-350 mt-0.5 leading-snug">
-                      {dbFeedback === 'demo' 
-                        ? 'Exactly 7 mock clients generated with specific materials, ledger expenses, and task lists.' 
-                        : 'Web Database wiped. Pristine templates ready for new client measurements.'}
+                    <p className="text-[10px] text-slate-350 mt-0.5 leading-snug font-sans">
+                      All local caches and collections flushed successfully. Your workspace is 100% fresh and ready.
                     </p>
                   </div>
                 </motion.div>

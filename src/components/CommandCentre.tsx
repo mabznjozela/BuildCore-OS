@@ -205,6 +205,10 @@ export default function CommandCentre({
                     }`}>
                       ❤️ Health: {job.health}
                     </span>
+                    {/* Date Created Pill */}
+                    <span className="text-[9px] font-sans font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/25 flex items-center gap-1">
+                      📅 Created: {job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : (job.statusSince ? new Date(job.statusSince).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '17 Jun 2026')}
+                    </span>
                     <span className="text-xs text-slate-400 font-medium font-sans">
                       • {job.area}
                     </span>

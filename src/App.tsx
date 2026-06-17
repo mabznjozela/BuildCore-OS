@@ -10,7 +10,7 @@ import {
 import { Job, Task, FinancialRecord, VaultFile, JobNote, JobStatus, ProjectHealth } from './types';
 import { exportToMasterExcel } from './utils/excelExport';
 import { FileSpreadsheet } from 'lucide-react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
 import CommandCentre from './components/CommandCentre';
 import WorkflowSection from './components/WorkflowSection';
@@ -18,15 +18,8 @@ import SpecificationsSection from './components/SpecificationsSection';
 import VisualVault from './components/VisualVault';
 import FinancialsSection from './components/FinancialsSection';
 import NotesSection from './components/NotesSection';
-import PowerBiSync from './components/PowerBiSync';
 import NewJobModal from './components/NewJobModal';
-import { 
-  getSevenDemoClients, 
-  getSevenDemoTasks, 
-  getSevenDemoFinancials, 
-  getSevenDemoFiles, 
-  getSevenDemoNotes 
-} from './demoSeeder';
+// Demo seeder functions removed
 import { sanitizeObject } from './utils/sanitizer';
 import { BookOpen, Smartphone, WifiOff, Sliders, ShieldCheck, Database, Trash2 } from 'lucide-react';
 import {
@@ -49,31 +42,70 @@ import {
   Clock
 } from 'lucide-react';
 
+const isDemoRecord = (data: any): boolean => {
+  if (!data) return false;
+  
+  if (data.id && typeof data.id === 'string') {
+    const idLow = data.id.toLowerCase();
+    if (
+      idLow.startsWith('job-') || 
+      idLow.startsWith('task-') || 
+      idLow.startsWith('fin-') || 
+      idLow.startsWith('file-') || 
+      idLow.startsWith('note-')
+    ) {
+      const suffix = idLow.split('-')[1];
+      if (suffix && /^\d+$/.test(suffix) && parseInt(suffix, 10) <= 25) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
+const isDemoJobId = (jobId: string): boolean => {
+  if (!jobId) return false;
+  const idLow = jobId.toLowerCase();
+  if (idLow.startsWith('job-')) {
+    const suffix = idLow.split('-')[1];
+    if (suffix && /^\d+$/.test(suffix) && parseInt(suffix, 10) <= 20) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export default function App() {
   // --- LocalStorage State Hydraton & Hooks ---
   const [jobs, setJobs] = useState<Job[]>(() => {
     const saved = localStorage.getItem('kl_jobs');
-    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_JOBS);
+    const parsed = saved ? JSON.parse(saved) : INITIAL_JOBS;
+    return sanitizeObject(parsed).filter(item => !isDemoRecord(item));
   });
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem('kl_tasks');
-    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_TASKS);
+    const parsed = saved ? JSON.parse(saved) : INITIAL_TASKS;
+    return sanitizeObject(parsed).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
   });
 
   const [financials, setFinancials] = useState<FinancialRecord[]>(() => {
     const saved = localStorage.getItem('kl_financials');
-    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_FINANCIALS);
+    const parsed = saved ? JSON.parse(saved) : INITIAL_FINANCIALS;
+    return sanitizeObject(parsed).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
   });
 
   const [files, setFiles] = useState<VaultFile[]>(() => {
     const saved = localStorage.getItem('kl_files');
-    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_FILES);
+    const parsed = saved ? JSON.parse(saved) : INITIAL_FILES;
+    return sanitizeObject(parsed).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
   });
 
   const [notes, setNotes] = useState<JobNote[]>(() => {
     const saved = localStorage.getItem('kl_notes');
-    return sanitizeObject(saved ? JSON.parse(saved) : INITIAL_NOTES);
+    const parsed = saved ? JSON.parse(saved) : INITIAL_NOTES;
+    return sanitizeObject(parsed).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
   });
 
   // --- View states ---
@@ -84,20 +116,33 @@ export default function App() {
   const [showAddJobModal, setShowAddJobModal] = useState<boolean>(false);
   const [automationAlert, setAutomationAlert] = useState<string | null>(null);
   const [drilldownType, setDrilldownType] = useState<'jobs' | 'tasks' | null>(null);
-  const [activeDatabaseMode, setActiveDatabaseMode] = useState<'demo' | 'live'>(() => {
-    const saved = localStorage.getItem('kl_db_mode');
-    return (saved as 'demo' | 'live') || 'demo';
-  });
   const [showUserGuide, setShowUserGuide] = useState<boolean>(false);
   const [isSleekTheme, setIsSleekTheme] = useState<boolean>(() => {
     const saved = localStorage.getItem('kl_sleek_theme');
     return saved ? JSON.parse(saved) : true;
   });
-  const [showSyncNotice, setShowSyncNotice] = useState<boolean>(() => {
-    const saved = localStorage.getItem('kl_sync_notice_dismissed');
-    return saved !== 'true';
-  });
   const [isSyncingLocal, setIsSyncingLocal] = useState<boolean>(false);
+
+  // --- Acting User for Audit Logs ---
+  const [currentUser, setCurrentUser] = useState<string>(() => {
+    return localStorage.getItem('kl_current_user') || 'Admin';
+  });
+  const [lastAudit, setLastAudit] = useState<{ lastEditedBy?: string; action?: string; timestamp?: string } | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('kl_current_user', currentUser);
+  }, [currentUser]);
+
+  const writeAuditRecord = (actionDesc: string) => {
+    const timestamp = new Date().toISOString();
+    setDoc(doc(db, 'metadata', 'audit'), {
+      lastEditedBy: currentUser,
+      action: actionDesc,
+      timestamp: timestamp
+    }, { merge: true }).catch(err => {
+      console.error("Failed to write audit record:", err);
+    });
+  };
 
   // --- Exclusive Security Lock & Presentation Control ---
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -125,20 +170,7 @@ export default function App() {
     setPasswordError(null);
   };
 
-  const handleGuestTourEntry = () => {
-    setPasswordInput('MR328355');
-    sessionStorage.setItem('kl_authenticated', 'true');
-    setIsAuthenticated(true);
-    setPasswordError(null);
-    setTimeout(() => {
-      triggerAutomationNotification("✨ Welcome to Kitchen Lab OS: Guest Mode Enabled. Interactive Demo Sandbox Loaded!");
-    }, 400);
-  };
-
   // Sync to localstorage
-  useEffect(() => {
-    localStorage.setItem('kl_db_mode', activeDatabaseMode);
-  }, [activeDatabaseMode]);
   useEffect(() => {
     localStorage.setItem('kl_sleek_theme', JSON.stringify(isSleekTheme));
   }, [isSleekTheme]);
@@ -158,11 +190,11 @@ export default function App() {
           const localFilesRaw = localStorage.getItem('kl_files');
           const localNotesRaw = localStorage.getItem('kl_notes');
 
-          const localJobs: Job[] = sanitizeObject(localJobsRaw ? JSON.parse(localJobsRaw) : INITIAL_JOBS);
-          const localTasks: Task[] = sanitizeObject(localTasksRaw ? JSON.parse(localTasksRaw) : INITIAL_TASKS);
-          const localFinancials: FinancialRecord[] = sanitizeObject(localFinancialsRaw ? JSON.parse(localFinancialsRaw) : INITIAL_FINANCIALS);
-          const localFiles: VaultFile[] = sanitizeObject(localFilesRaw ? JSON.parse(localFilesRaw) : INITIAL_FILES);
-          const localNotes: JobNote[] = sanitizeObject(localNotesRaw ? JSON.parse(localNotesRaw) : INITIAL_NOTES);
+          const localJobs: Job[] = sanitizeObject(localJobsRaw ? JSON.parse(localJobsRaw) : INITIAL_JOBS).filter(item => !isDemoRecord(item));
+          const localTasks: Task[] = sanitizeObject(localTasksRaw ? JSON.parse(localTasksRaw) : INITIAL_TASKS).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
+          const localFinancials: FinancialRecord[] = sanitizeObject(localFinancialsRaw ? JSON.parse(localFinancialsRaw) : INITIAL_FINANCIALS).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
+          const localFiles: VaultFile[] = sanitizeObject(localFilesRaw ? JSON.parse(localFilesRaw) : INITIAL_FILES).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
+          const localNotes: JobNote[] = sanitizeObject(localNotesRaw ? JSON.parse(localNotesRaw) : INITIAL_NOTES).filter(item => !isDemoRecord(item) && !isDemoJobId(item.jobId));
 
           // Migrate each record safely with merge: true to avoid overwriting newer cloud entries
           for (const job of localJobs) {
@@ -193,7 +225,14 @@ export default function App() {
       const unsubJobs = onSnapshot(collection(db, 'jobs'), (snapshot) => {
         const list: Job[] = [];
         snapshot.forEach((docSnap) => {
-          list.push(docSnap.data() as Job);
+          const item = docSnap.data() as Job;
+          if (isDemoRecord(item)) {
+            deleteDoc(doc(db, 'jobs', docSnap.id)).catch(err => {
+              console.error("Failed to delete demo job doc from Firestore:", err);
+            });
+          } else {
+            list.push(item);
+          }
         });
         const sanitized = sanitizeObject(list);
         setJobs(sanitized);
@@ -217,7 +256,14 @@ export default function App() {
       const unsubTasks = onSnapshot(collection(db, 'tasks'), (snapshot) => {
         const list: Task[] = [];
         snapshot.forEach((docSnap) => {
-          list.push(docSnap.data() as Task);
+          const item = docSnap.data() as Task;
+          if (isDemoRecord(item) || isDemoJobId(item.jobId)) {
+            deleteDoc(doc(db, 'tasks', docSnap.id)).catch(err => {
+              console.error("Failed to delete demo task doc from Firestore:", err);
+            });
+          } else {
+            list.push(item);
+          }
         });
         const sanitized = sanitizeObject(list);
         setTasks(sanitized);
@@ -241,7 +287,14 @@ export default function App() {
       const unsubFinancials = onSnapshot(collection(db, 'financials'), (snapshot) => {
         const list: FinancialRecord[] = [];
         snapshot.forEach((docSnap) => {
-          list.push(docSnap.data() as FinancialRecord);
+          const item = docSnap.data() as FinancialRecord;
+          if (isDemoRecord(item) || isDemoJobId(item.jobId)) {
+            deleteDoc(doc(db, 'financials', docSnap.id)).catch(err => {
+              console.error("Failed to delete demo financial doc from Firestore:", err);
+            });
+          } else {
+            list.push(item);
+          }
         });
         const sanitized = sanitizeObject(list);
         setFinancials(sanitized);
@@ -265,7 +318,14 @@ export default function App() {
       const unsubFiles = onSnapshot(collection(db, 'files'), (snapshot) => {
         const list: VaultFile[] = [];
         snapshot.forEach((docSnap) => {
-          list.push(docSnap.data() as VaultFile);
+          const item = docSnap.data() as VaultFile;
+          if (isDemoRecord(item) || isDemoJobId(item.jobId)) {
+            deleteDoc(doc(db, 'files', docSnap.id)).catch(err => {
+              console.error("Failed to delete demo file doc from Firestore:", err);
+            });
+          } else {
+            list.push(item);
+          }
         });
         const sanitized = sanitizeObject(list);
         setFiles(sanitized);
@@ -289,7 +349,14 @@ export default function App() {
       const unsubNotes = onSnapshot(collection(db, 'notes'), (snapshot) => {
         const list: JobNote[] = [];
         snapshot.forEach((docSnap) => {
-          list.push(docSnap.data() as JobNote);
+          const item = docSnap.data() as JobNote;
+          if (isDemoRecord(item) || isDemoJobId(item.jobId)) {
+            deleteDoc(doc(db, 'notes', docSnap.id)).catch(err => {
+              console.error("Failed to delete demo note doc from Firestore:", err);
+            });
+          } else {
+            list.push(item);
+          }
         });
         const sanitized = sanitizeObject(list);
         setNotes(sanitized);
@@ -310,7 +377,15 @@ export default function App() {
         console.error("Firestore notes listener error caught gracefully:", error);
       });
 
-      unsubs.push(unsubJobs, unsubTasks, unsubFinancials, unsubFiles, unsubNotes);
+      const unsubAudit = onSnapshot(doc(db, 'metadata', 'audit'), (docSnap) => {
+        if (docSnap.exists()) {
+          setLastAudit(docSnap.data() as any);
+        }
+      }, (error) => {
+        console.error("Firestore audit log listener error caught gracefully:", error);
+      });
+
+      unsubs.push(unsubJobs, unsubTasks, unsubFinancials, unsubFiles, unsubNotes, unsubAudit);
     };
 
     initializeAndSync();
@@ -366,89 +441,43 @@ export default function App() {
 
   // --- Handlers & Mutator Actions ---
 
-  const handleSeedDemoData = async (
-    newJobs: Job[],
-    newTasks: Task[],
-    newFinancials: FinancialRecord[],
-    newFiles: VaultFile[],
-    newNotes: JobNote[]
-  ) => {
-    try {
-      // First, let's clear existing items to avoid pollution
-      for (const j of jobs) {
-        await deleteDoc(doc(db, 'jobs', j.id));
-      }
-      for (const t of tasks) {
-        await deleteDoc(doc(db, 'tasks', t.id));
-      }
-      for (const f of financials) {
-        await deleteDoc(doc(db, 'financials', f.id));
-      }
-      for (const fl of files) {
-        await deleteDoc(doc(db, 'files', fl.id));
-      }
-      for (const n of notes) {
-        await deleteDoc(doc(db, 'notes', n.id));
-      }
-
-      // Now set isSyncingLocal to show feedback
-      setIsSyncingLocal(true);
-
-      // Now add sanitized records
-      const cleanJobs = sanitizeObject(newJobs);
-      const cleanTasks = sanitizeObject(newTasks);
-      const cleanFinancials = sanitizeObject(newFinancials);
-      const cleanFiles = sanitizeObject(newFiles);
-      const cleanNotes = sanitizeObject(newNotes);
-
-      for (const job of cleanJobs) {
-        await setDoc(doc(db, 'jobs', job.id), job);
-      }
-      for (const task of cleanTasks) {
-        await setDoc(doc(db, 'tasks', task.id), task);
-      }
-      for (const financial of cleanFinancials) {
-        await setDoc(doc(db, 'financials', financial.id), financial);
-      }
-      for (const file of cleanFiles) {
-        await setDoc(doc(db, 'files', file.id), file);
-      }
-      for (const note of cleanNotes) {
-        await setDoc(doc(db, 'notes', note.id), note);
-      }
-
-      setSelectedJobId(null);
-      setIsSyncingLocal(false);
-      triggerAutomationNotification("✨ Successfully seeded clean interactive demo data in the cloud database!");
-    } catch (err) {
-      console.error("Firestore seeding failed:", err);
-      setIsSyncingLocal(false);
-    }
+  const handleSeedDemoData = async () => {
+    // Historic seeder now triggers clean reset only
+    await handleResetCleanState();
   };
 
   const handleResetCleanState = async () => {
     try {
       setIsSyncingLocal(true);
-      for (const j of jobs) {
-        await deleteDoc(doc(db, 'jobs', j.id));
+      
+      // Absolute query & erase of all Firestore documents in cloud collections
+      const collections = ['jobs', 'tasks', 'financials', 'files', 'notes'];
+      for (const colName of collections) {
+        const querySnapshot = await getDocs(collection(db, colName));
+        for (const docSnap of querySnapshot.docs) {
+          await deleteDoc(doc(db, colName, docSnap.id));
+        }
       }
-      for (const t of tasks) {
-        await deleteDoc(doc(db, 'tasks', t.id));
-      }
-      for (const f of financials) {
-        await deleteDoc(doc(db, 'financials', f.id));
-      }
-      for (const fl of files) {
-        await deleteDoc(doc(db, 'files', fl.id));
-      }
-      for (const n of notes) {
-        await deleteDoc(doc(db, 'notes', n.id));
-      }
+
+      // Erase and flush the device LocalStorage cache mirrors
+      localStorage.setItem('kl_jobs', JSON.stringify([]));
+      localStorage.setItem('kl_tasks', JSON.stringify([]));
+      localStorage.setItem('kl_financials', JSON.stringify([]));
+      localStorage.setItem('kl_files', JSON.stringify([]));
+      localStorage.setItem('kl_notes', JSON.stringify([]));
+
+      // Reset application state memory
+      setJobs([]);
+      setTasks([]);
+      setFinancials([]);
+      setFiles([]);
+      setNotes([]);
+      
       setSelectedJobId(null);
       setIsSyncingLocal(false);
-      triggerAutomationNotification("🗑️ Standard clean slate initialized in the cloud database!");
+      triggerAutomationNotification("🗑️ Standard clean slate initialized! Cloud and local databases are completely empty.");
     } catch (err) {
-      console.error("Firestore reset failed:", err);
+      console.error("Firestore absolute wipe reset failed:", err);
       setIsSyncingLocal(false);
     }
   };
@@ -460,6 +489,7 @@ export default function App() {
         status: newStatus,
         statusSince: new Date().toISOString()
       }, { merge: true });
+      writeAuditRecord(`Advanced status of project ${jobId} to "${newStatus.substring(2)}"`);
     }
     triggerAutomationNotification(`Status advanced to "${newStatus.substring(2)}" for project!`);
   };
@@ -469,6 +499,7 @@ export default function App() {
     if (task) {
       const nextState = !task.complete;
       setDoc(doc(db, 'tasks', taskId), { complete: nextState }, { merge: true });
+      writeAuditRecord(`${nextState ? 'Completed' : 'Reopened'} task: "${task.taskName}" on project ${task.jobId}`);
 
       if (task.taskName.includes('60%') && nextState) {
         setTimeout(() => {
@@ -493,6 +524,7 @@ export default function App() {
         status: '8 Deposit Paid',
         statusSince: new Date().toISOString()
       }, { merge: true });
+      writeAuditRecord(`Triggered deposit received automation (60%) for project ${jobId}`);
     }
   };
 
@@ -506,11 +538,13 @@ export default function App() {
       complete: false
     };
     setDoc(doc(db, 'tasks', newId), newTask);
+    writeAuditRecord(`Added custom task "${taskName}" to project ${jobId}`);
     triggerAutomationNotification(`Bespoke task "${taskName}" inserted into active stage queue.`);
   };
 
   const handleUpdateSpecs = (jobId: string, updatedSpecs: any) => {
     setDoc(doc(db, 'jobs', jobId), { specs: updatedSpecs }, { merge: true });
+    writeAuditRecord(`Updated cabinet specifications for project ${jobId}`);
   };
 
   const handleAddFile = (newFile: Omit<VaultFile, 'id' | 'uploadedAt'>) => {
@@ -521,11 +555,13 @@ export default function App() {
       uploadedAt: new Date().toISOString()
     };
     setDoc(doc(db, 'files', newId), appended);
+    writeAuditRecord(`Uploaded file "${newFile.name}" to project ${newFile.jobId}`);
     triggerAutomationNotification(`File "${newFile.name}" pinned securely inside Visual Vault.`);
   };
 
   const handleDeleteFile = (fileId: string) => {
     deleteDoc(doc(db, 'files', fileId));
+    writeAuditRecord(`Removed database file ${fileId}`);
   };
 
   const handleAddTransaction = (newTx: Omit<FinancialRecord, 'id' | 'date'>) => {
@@ -537,6 +573,7 @@ export default function App() {
       date: txDate
     };
     setDoc(doc(db, 'financials', newId), logged);
+    writeAuditRecord(`Logged ${newTx.type} of R${newTx.amount.toLocaleString()} for project ${newTx.jobId}`);
 
     if (newTx.type === 'payment') {
       const job = jobs.find((j) => j.id === newTx.jobId);
@@ -564,16 +601,19 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
     setDoc(doc(db, 'notes', newId), newNoteRecord);
+    writeAuditRecord(`Added discussion note to project ${jobId}`);
   };
 
   const handleUpdateJobState = (jobId: string, updatedFields: Partial<Job>) => {
     setDoc(doc(db, 'jobs', jobId), updatedFields, { merge: true });
+    writeAuditRecord(`Updated passport layout fields on project ${jobId}`);
   };
 
   const handleCreateNewJob = (newJobData: any) => {
     const newJob: Job = {
       ...newJobData,
-      statusSince: new Date().toISOString()
+      statusSince: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     };
 
     setDoc(doc(db, 'jobs', newJob.id), newJob);
@@ -596,6 +636,7 @@ export default function App() {
       setDoc(doc(db, 'tasks', t.id), t);
     });
 
+    writeAuditRecord(`Created new project passport ${newJob.id}`);
     setShowAddJobModal(false);
     setSelectedJobId(newJob.id);
     triggerAutomationNotification(`Project passport ${newJob.id} generated with 11 core tracking tasks.`);
@@ -656,7 +697,7 @@ export default function App() {
 
   const handleCopyStableUrl = () => {
     navigator.clipboard.writeText("https://ais-pre-wftnbto5nhvufmuv4sesd6-933896873270.europe-west2.run.app");
-    triggerAutomationNotification("📋 Copied stable Shared App URL to clipboard! This is the single URL to use for the demo.");
+    triggerAutomationNotification("📋 Copied Master App URL to clipboard!");
   };
 
   // --- Filtering list logic ---
@@ -751,7 +792,7 @@ export default function App() {
                       setPasswordInput(e.target.value);
                       if (passwordError) setPasswordError(null);
                     }}
-                    placeholder="••••••••••••"
+                    placeholder="••••••••"
                     className="w-full bg-slate-50 text-slate-950 px-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-red-650 focus:outline-none font-mono text-center text-sm tracking-[0.3em] font-extrabold shadow-inner transition-all duration-200"
                     autoFocus
                   />
@@ -774,17 +815,6 @@ export default function App() {
               >
                 🔓 Request Secure Access
               </button>
-
-              <div className="pt-2 flex flex-col gap-2">
-                <button
-                  id="client-demo-bypass-btn"
-                  type="button"
-                  onClick={handleGuestTourEntry}
-                  className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs tracking-wide py-3.5 rounded-2xl cursor-pointer transition-all border border-indigo-200/60 flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  ✨ Guest Mode • Tap to Auto-Unlock
-                </button>
-              </div>
             </form>
 
             <div className="mt-8 border-t border-slate-100 pt-6 w-full text-center">
@@ -858,53 +888,49 @@ export default function App() {
         </div>
       </header>
 
-      {/* Sync Pipeline Bar */}
-      <section className="bg-slate-900 text-slate-300 py-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between text-[11px] font-medium py-1">
-            <div className="flex items-center gap-1.5 text-indigo-400 font-sans">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-              Kitchen Lab OS • Offline-First Master Database Active
-            </div>
-            <div className="text-slate-500 hidden md:block font-sans">
-              AppSheet Client Interface Connected • (Upgrade to ERP/Report Layer available)
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* SYSTEM DATABASE ENVIRONMENT & MANUAL BAR */}
       <section className={`border-b ${isSleekTheme ? 'bg-slate-950 border-slate-900 text-slate-100' : 'bg-[#ffffff] border-slate-150 text-slate-850'} py-3 transition-colors duration-300`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest font-mono shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <span className="text-[10px] text-slate-450 font-black uppercase tracking-widest font-mono shrink-0">
               DATABASE STATUS:
             </span>
             {/* Cloud Sync Status Pill */}
-            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-800/30 flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-800/30 flex items-center gap-1.5 shrink-0">
               <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-pulse" />
               ⚡ CLOUD DATABASE SYNCED
             </span>
+
+            {/* Audit Log Badge */}
+            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 flex items-center gap-1.5 shrink-0">
+              <span>🕒 LAST EDITED BY:</span>
+              <span className="text-[#f1f5f9] tracking-tight truncate max-w-[120px] font-sans font-bold">{lastAudit?.lastEditedBy || 'David'}</span>
+              <span className="text-indigo-400/80 font-normal">
+                ({lastAudit?.timestamp ? new Date(lastAudit.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Initial Sync'})
+              </span>
+              {lastAudit?.action && (
+                <span className="text-[9px] text-indigo-400 font-normal border-l border-indigo-800/40 pl-1.5 max-w-[200px] truncate hidden md:inline">
+                  {lastAudit.action}
+                </span>
+              )}
+            </span>
+
+            {/* Acting user profile dropdown switcher */}
+            <div className="flex items-center gap-1.5 bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800 px-2.5 py-1 rounded-xl text-[10px] transition-all shrink-0">
+              <span className="text-slate-500 font-sans font-bold">Acting User:</span>
+              <select
+                value={currentUser}
+                onChange={(e) => setCurrentUser(e.target.value)}
+                className="bg-transparent text-indigo-300 font-bold border-none outline-none focus:ring-0 cursor-pointer text-[10px] py-0 pl-1 pr-1.5 select-none font-mono"
+              >
+                <option value="David" className="bg-slate-900 text-white">David</option>
+                <option value="Admin" className="bg-slate-900 text-white">Admin (mabza1n)</option>
+                <option value="Installer Mark" className="bg-slate-900 text-white">Installer Mark</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 self-end md:self-center">
-            <button
-              id="toggle-sync-notice-btn"
-              onClick={() => {
-                setShowSyncNotice(!showSyncNotice);
-                if (!showSyncNotice) {
-                  localStorage.removeItem('kl_sync_notice_dismissed');
-                }
-              }}
-              className={`text-xs px-4 py-1.5 rounded-xl font-bold flex items-center gap-1.5 select-none cursor-pointer transition-all border ${
-                showSyncNotice
-                  ? 'bg-slate-850 text-emerald-400 border-emerald-500/30'
-                  : 'bg-emerald-950/30 text-emerald-350 border-emerald-900/40 hover:bg-emerald-950/60'
-              }`}
-            >
-              📡 {showSyncNotice ? 'Hide Sync Hub' : '📡 Open Sync Hub'}
-            </button>
-
+          <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
             <button
               id="toggle-user-guide-btn"
               onClick={() => setShowUserGuide(!showUserGuide)}
@@ -920,7 +946,6 @@ export default function App() {
           </div>
         </div>
       </section>
-
       {/* USER & WORKSHOP MANUAL */}
       <AnimatePresence>
         {showUserGuide && (
@@ -1042,94 +1067,6 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              {/* TEAM CLOUD SYNC & CLIENT PRESENTATION CONTROL CENTER */}
-              {showSyncNotice && (
-                <div className={`p-6 rounded-[24px] border ${isSleekTheme ? 'bg-[#0f1422] border-indigo-500/20 text-slate-100' : 'bg-[#f0f4f8] border-indigo-200 text-slate-800'} shadow-xl relative overflow-hidden transition-all duration-300`}>
-                  {/* Glowing background gradient elements for premium custom-design feel */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl pointer-events-none rounded-full" />
-                  
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
-                    <div className="space-y-2 max-w-3xl">
-                      <div className="flex items-center gap-2 text-indigo-400">
-                        <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                        <span className="font-extrabold text-xs uppercase tracking-wider font-sans">Kitchen Lab Sync Hub</span>
-                      </div>
-                      <h3 className="text-md sm:text-lg font-sans font-black tracking-tight flex items-center gap-2">
-                        📡 Cloud Sync Status & Device Co-ordination Guide
-                      </h3>
-                      <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                        Kitchen Lab OS is now backed by a persistent <strong>Firestore Cloud Database</strong>. 
-                        Both you and Dave can log in and view, create, or update cabinet specifications and payments.
-                      </p>
-                      
-                      {/* Interactive Help Checklist in collapsible/readable style */}
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                        <div className={`p-3.5 rounded-xl border ${isSleekTheme ? 'bg-slate-950/45 border-slate-900' : 'bg-white border-slate-200'} space-y-1.5`}>
-                          <span className="text-xs font-extrabold block text-indigo-400">❓ Why couldn't I see Dave's inputs?</span>
-                          <span className="text-[11px] block text-slate-400 leading-relaxed">
-                            Dave's phone is likely running an <strong>older cached offline version</strong>. Mobile browsers do not auto-reload frequently. Have Dave open the app link on his phone and perform a <strong>full finger pull-to-refresh (reload) once</strong>! This installs the cloud sync client, instantly migrates his offline listings, and links your devices live.
-                          </span>
-                        </div>
-                        
-                        <div className={`p-3.5 rounded-xl border ${isSleekTheme ? 'bg-slate-950/45 border-slate-900' : 'bg-white border-slate-200'} space-y-1.5`}>
-                          <span className="text-xs font-extrabold block text-indigo-400">🔗 How do we prevent demo glitches going forward?</span>
-                          <span className="text-[11px] block text-slate-400 leading-relaxed">
-                            Stop using the unstable Dev/Sandbox URL! Always use and share the **Stable Shared App URL** below. This URL never sleeps and is optimized for flawless performance during client presentations.
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Display stable URL */}
-                      <div className={`mt-3 p-3 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-3 ${isSleekTheme ? 'bg-slate-950/60 border-slate-900' : 'bg-slate-50 border-slate-200'}`}>
-                        <div className="flex flex-col text-left w-full">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">STABLE PRESENTATION WEB LINK</span>
-                          <span className="text-xs font-mono font-bold text-indigo-400 select-all truncate mt-0.5">https://ais-pre-wftnbto5nhvufmuv4sesd6-933896873270.europe-west2.run.app</span>
-                        </div>
-                        <button
-                          onClick={handleCopyStableUrl}
-                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-[11px] px-3.5 py-2 rounded-lg transition-all shrink-0 w-full sm:w-auto text-center cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          📋 Copy Link
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row lg:flex-col bg-slate-950/50 border border-slate-900 p-2 rounded-2xl shrink-0 gap-2 w-full lg:w-64">
-                      <button
-                        onClick={handleForceUploadLocalData}
-                        disabled={isSyncingLocal}
-                        className={`text-xs px-4 py-3 font-extrabold rounded-xl cursor-pointer transition-all shrink-0 text-center flex items-center justify-center gap-2 w-full ${
-                          isSyncingLocal 
-                            ? 'bg-slate-800 text-slate-500' 
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                        }`}
-                      >
-                        {isSyncingLocal ? (
-                          <>
-                            <span className="h-3 w-3 border-2 border-slate-500 border-t-white rounded-full animate-spin" />
-                            Syncing Cloud...
-                          </>
-                        ) : (
-                          <>
-                            📥 Force Upload Local Items
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => {
-                          localStorage.setItem('kl_sync_notice_dismissed', 'true');
-                          setShowSyncNotice(false);
-                          triggerAutomationNotification("💡 Control center dismissed. You can open instructions anytime using the User Manual above!");
-                        }}
-                        className="text-xs px-4 py-3 bg-slate-950 hover:bg-slate-900 hover:text-slate-200 text-slate-400 font-bold rounded-xl cursor-pointer transition-all shrink-0 text-center border border-slate-900 w-full"
-                      >
-                        ✕ Dismiss Sync Panel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Core KPI metrics Row */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 
@@ -2132,9 +2069,7 @@ export default function App() {
               )}
 
               {/* Power BI Sync widget under jobs list visual */}
-              <div className="pt-6">
-                <PowerBiSync />
-              </div>
+              <div className="pt-6" />
 
             </motion.div>
           ) : (

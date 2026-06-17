@@ -44,6 +44,7 @@ export interface Job {
   nextAction: string;
   health: ProjectHealth;
   statusSince: string; // ISO date string
+  createdAt?: string; // ISO date string when job was created
   installationDate?: string; // ISO date or simple string
   quoteValue: number;
   depositReceived: number;
