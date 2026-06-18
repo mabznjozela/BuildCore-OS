@@ -37,9 +37,12 @@ import {
   ExternalLink,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
   ArrowRight,
   Sparkles,
-  Clock
+  Clock,
+  ClipboardList
 } from 'lucide-react';
 
 const isDemoRecord = (data: any): boolean => {
@@ -122,6 +125,8 @@ export default function App() {
     return saved ? JSON.parse(saved) : true;
   });
   const [isSyncingLocal, setIsSyncingLocal] = useState<boolean>(false);
+  const [isFloorProjectsExpanded, setIsFloorProjectsExpanded] = useState<boolean>(true);
+  const [isFloorTasksExpanded, setIsFloorTasksExpanded] = useState<boolean>(true);
 
   // --- Acting User for Audit Logs ---
   const [currentUser, setCurrentUser] = useState<string>(() => {
@@ -149,14 +154,30 @@ export default function App() {
     const saved = sessionStorage.getItem('kl_authenticated');
     return saved === 'true';
   });
+  const [userRole, setUserRole] = useState<'admin' | 'floor'>(() => {
+    const savedRole = sessionStorage.getItem('kl_user_role');
+    return (savedRole as 'admin' | 'floor') || 'floor';
+  });
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'MR328355') {
+    if (!passwordInput.trim()) {
+      setPasswordError('Please enter a secure password.');
+      return;
+    }
+    if (passwordInput === '1@m@dm1n') {
       sessionStorage.setItem('kl_authenticated', 'true');
+      sessionStorage.setItem('kl_user_role', 'admin');
       setIsAuthenticated(true);
+      setUserRole('admin');
+      setPasswordError(null);
+    } else if (passwordInput === 'MR328355') {
+      sessionStorage.setItem('kl_authenticated', 'true');
+      sessionStorage.setItem('kl_user_role', 'floor');
+      setIsAuthenticated(true);
+      setUserRole('floor');
       setPasswordError(null);
     } else {
       setPasswordError('Invalid credentials. Check key & try again.');
@@ -165,7 +186,9 @@ export default function App() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('kl_authenticated');
+    sessionStorage.removeItem('kl_user_role');
     setIsAuthenticated(false);
+    setUserRole('floor');
     setPasswordInput('');
     setPasswordError(null);
   };
@@ -772,9 +795,6 @@ export default function App() {
             {/* Sub-Header info block */}
             <div className="text-center mb-8">
               <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest">MASTER SECURITY PORTAL</h2>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed max-w-sm">
-                Enter David's master access credential pin to unlock the Kitchen Lab Operating System workspace.
-              </p>
             </div>
 
             {/* Password input form */}
@@ -889,147 +909,151 @@ export default function App() {
       </header>
 
       {/* SYSTEM DATABASE ENVIRONMENT & MANUAL BAR */}
-      <section className={`border-b ${isSleekTheme ? 'bg-slate-950 border-slate-900 text-slate-100' : 'bg-[#ffffff] border-slate-150 text-slate-850'} py-3 transition-colors duration-300`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-            <span className="text-[10px] text-slate-450 font-black uppercase tracking-widest font-mono shrink-0">
-              DATABASE STATUS:
-            </span>
-            {/* Cloud Sync Status Pill */}
-            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-800/30 flex items-center gap-1.5 shrink-0">
-              <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-pulse" />
-              ⚡ CLOUD DATABASE SYNCED
-            </span>
-
-            {/* Audit Log Badge */}
-            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 flex items-center gap-1.5 shrink-0">
-              <span>🕒 LAST EDITED BY:</span>
-              <span className="text-[#f1f5f9] tracking-tight truncate max-w-[120px] font-sans font-bold">{lastAudit?.lastEditedBy || 'David'}</span>
-              <span className="text-indigo-400/80 font-normal">
-                ({lastAudit?.timestamp ? new Date(lastAudit.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Initial Sync'})
+      {userRole === 'admin' && (
+        <section className={`border-b ${isSleekTheme ? 'bg-slate-950 border-slate-900 text-slate-100' : 'bg-[#ffffff] border-slate-150 text-slate-850'} py-3 transition-colors duration-300`}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              <span className="text-[10px] text-slate-450 font-black uppercase tracking-widest font-mono shrink-0">
+                DATABASE STATUS:
               </span>
-              {lastAudit?.action && (
-                <span className="text-[9px] text-indigo-400 font-normal border-l border-indigo-800/40 pl-1.5 max-w-[200px] truncate hidden md:inline">
-                  {lastAudit.action}
-                </span>
-              )}
-            </span>
+              {/* Cloud Sync Status Pill */}
+              <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-800/30 flex items-center gap-1.5 shrink-0">
+                <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                ⚡ CLOUD DATABASE SYNCED
+              </span>
 
-            {/* Acting user profile dropdown switcher */}
-            <div className="flex items-center gap-1.5 bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800 px-2.5 py-1 rounded-xl text-[10px] transition-all shrink-0">
-              <span className="text-slate-500 font-sans font-bold">Acting User:</span>
-              <select
-                value={currentUser}
-                onChange={(e) => setCurrentUser(e.target.value)}
-                className="bg-transparent text-indigo-300 font-bold border-none outline-none focus:ring-0 cursor-pointer text-[10px] py-0 pl-1 pr-1.5 select-none font-mono"
+              {/* Audit Log Badge */}
+              <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 flex items-center gap-1.5 shrink-0">
+                <span>🕒 LAST EDITED BY:</span>
+                <span className="text-[#f1f5f9] tracking-tight truncate max-w-[120px] font-sans font-bold">{lastAudit?.lastEditedBy || 'David'}</span>
+                <span className="text-indigo-400/80 font-normal">
+                  ({lastAudit?.timestamp ? new Date(lastAudit.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Initial Sync'})
+                </span>
+                {lastAudit?.action && (
+                  <span className="text-[9px] text-indigo-400 font-normal border-l border-indigo-800/40 pl-1.5 max-w-[200px] truncate hidden md:inline">
+                    {lastAudit.action}
+                  </span>
+                )}
+              </span>
+
+              {/* Acting user profile dropdown switcher */}
+              <div className="flex items-center gap-1.5 bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800 px-2.5 py-1 rounded-xl text-[10px] transition-all shrink-0">
+                <span className="text-slate-500 font-sans font-bold">Acting User:</span>
+                <select
+                  value={currentUser}
+                  onChange={(e) => setCurrentUser(e.target.value)}
+                  className="bg-transparent text-indigo-300 font-bold border-none outline-none focus:ring-0 cursor-pointer text-[10px] py-0 pl-1 pr-1.5 select-none font-mono"
+                >
+                  <option value="David" className="bg-slate-900 text-white">David</option>
+                  <option value="Admin" className="bg-slate-900 text-white">Admin (mabza1n)</option>
+                  <option value="Installer Mark" className="bg-slate-900 text-white">Installer Mark</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
+              <button
+                id="toggle-user-guide-btn"
+                onClick={() => setShowUserGuide(!showUserGuide)}
+                className={`text-xs px-4 py-1.5 rounded-xl font-bold flex items-center gap-1.5 select-none cursor-pointer transition-all border ${
+                  showUserGuide
+                    ? 'bg-slate-850 text-indigo-400 border-indigo-500/30'
+                    : 'bg-indigo-950/30 text-indigo-300 border-indigo-900/40 hover:bg-indigo-950/60'
+                }`}
               >
-                <option value="David" className="bg-slate-900 text-white">David</option>
-                <option value="Admin" className="bg-slate-900 text-white">Admin (mabza1n)</option>
-                <option value="Installer Mark" className="bg-slate-900 text-white">Installer Mark</option>
-              </select>
+                <BookOpen className="h-4 w-4" />
+                {showUserGuide ? 'Hide User Manual' : '📖 Open User Manual'}
+              </button>
             </div>
           </div>
-
-          <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
-            <button
-              id="toggle-user-guide-btn"
-              onClick={() => setShowUserGuide(!showUserGuide)}
-              className={`text-xs px-4 py-1.5 rounded-xl font-bold flex items-center gap-1.5 select-none cursor-pointer transition-all border ${
-                showUserGuide
-                  ? 'bg-slate-850 text-indigo-400 border-indigo-500/30'
-                  : 'bg-indigo-950/30 text-indigo-300 border-indigo-900/40 hover:bg-indigo-950/60'
+        </section>
+      )}
+      {/* USER & WORKSHOP MANUAL */}
+      {userRole === 'admin' && (
+        <AnimatePresence>
+          {showUserGuide && (
+            <motion.section
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`overflow-hidden border-b transition-colors duration-300 ${
+                isSleekTheme ? 'bg-slate-900/40 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-850'
               }`}
             >
-              <BookOpen className="h-4 w-4" />
-              {showUserGuide ? 'Hide User Manual' : '📖 Open User Manual'}
-            </button>
-          </div>
-        </div>
-      </section>
-      {/* USER & WORKSHOP MANUAL */}
-      <AnimatePresence>
-        {showUserGuide && (
-          <motion.section
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className={`overflow-hidden border-b transition-colors duration-300 ${
-              isSleekTheme ? 'bg-slate-900/40 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-850'
-            }`}
-          >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-              <div className="flex items-start justify-between border-b border-slate-800/40 pb-3 mb-4">
-                <div>
-                  <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono flex items-center gap-2">
-                    <BookOpen className="h-4.5 w-4.5" />
-                    Kitchen Lab OS • Operational Handbook
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    How David and the site installation crew operate on location using this system.
-                  </p>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                <div className="flex items-start justify-between border-b border-slate-800/40 pb-3 mb-4">
+                  <div>
+                    <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                      <BookOpen className="h-4.5 w-4.5" />
+                      Kitchen Lab OS • Operational Handbook
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      How David and the site installation crew operate on location using this system.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowUserGuide(false)}
+                    className="text-xs text-slate-400 hover:text-slate-200 uppercase font-mono font-bold"
+                  >
+                    ✕ Close Manual
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowUserGuide(false)}
-                  className="text-xs text-slate-400 hover:text-slate-200 uppercase font-mono font-bold"
-                >
-                  ✕ Close Manual
-                </button>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  
+                  {/* Manual Section 1 */}
+                  <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
+                    <div className="flex items-center gap-2 text-indigo-400">
+                      <Smartphone className="h-4.5 w-4.5" />
+                      <h3 className="text-xs font-bold uppercase font-sans tracking-wide">1. Loading onto your Phone</h3>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      You don't need any app stores! 
+                      <br />
+                      1. Tap the <strong className="text-slate-350">Share App URL</strong> option inside AI Studio, or open the link on your phone.
+                      <br />
+                      2. In Chrome (Android) or Safari (iPhone), tap the <strong className="text-indigo-400 font-extrabold">"Share" / "Menu"</strong> button.
+                      <br />
+                      3. Choose <strong className="text-indigo-400 font-extrabold">"Add to Home Screen"</strong>.
+                      <br />
+                      It places a standalone workspace launcher shortcut immediately onto your phone's home screen.
+                    </p>
+                  </div>
+
+                  {/* Manual Section 2 */}
+                  <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
+                    <div className="flex items-center gap-2 text-indigo-400">
+                      <WifiOff className="h-4.5 w-4.5" />
+                      <h3 className="text-xs font-bold uppercase font-sans tracking-wide">2. Offline vs. Online Capabilities</h3>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      <strong>Absolute Offline:</strong> David can type, create clients, modify measurements, adjust door hinges, or log payments at client sites in remote, zero-reception areas. Key numbers are cached securely inside the phone's built-in LocalStorage database and never lost.
+                      <br />
+                      <strong>Online Mode:</strong> When cell signal restores, sending ERP/Report Layer setup requests or transferring data occurs with zero manual input or sync conflict.
+                    </p>
+                  </div>
+
+                  {/* Manual Section 3 */}
+                  <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
+                    <div className="flex items-center gap-2 text-indigo-400">
+                      <Sliders className="h-4.5 w-4.5" />
+                      <h3 className="text-xs font-bold uppercase font-sans tracking-wide">3. Core Features to Showcase</h3>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      • <strong className="text-slate-300">Specifications Section:</strong> Keep track of soft-close hinges, board materials (Melawood, PG Bison), door types, and stone suppliers.
+                      <br />
+                      • <strong className="text-slate-300">Site-Notes Amendments:</strong> Correct wrong measurements or specific client requests (like a secret wardrobe compartment) instantly.
+                      <br />
+                      • <strong className="text-slate-300">Visual Vault:</strong> Preview active CAD drawings or 3D renderings to keep the cabinet-making team aligned.
+                    </p>
+                  </div>
+
+                </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                {/* Manual Section 1 */}
-                <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
-                  <div className="flex items-center gap-2 text-indigo-400">
-                    <Smartphone className="h-4.5 w-4.5" />
-                    <h3 className="text-xs font-bold uppercase font-sans tracking-wide">1. Loading onto your Phone</h3>
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    You don't need any app stores! 
-                    <br />
-                    1. Tap the <strong className="text-slate-350">Share App URL</strong> option inside AI Studio, or open the link on your phone.
-                    <br />
-                    2. In Chrome (Android) or Safari (iPhone), tap the <strong className="text-indigo-400 font-extrabold">"Share" / "Menu"</strong> button.
-                    <br />
-                    3. Choose <strong className="text-indigo-400 font-extrabold">"Add to Home Screen"</strong>.
-                    <br />
-                    It places a standalone workspace launcher shortcut immediately onto your phone's home screen.
-                  </p>
-                </div>
-
-                {/* Manual Section 2 */}
-                <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
-                  <div className="flex items-center gap-2 text-indigo-400">
-                    <WifiOff className="h-4.5 w-4.5" />
-                    <h3 className="text-xs font-bold uppercase font-sans tracking-wide">2. Offline vs. Online Capabilities</h3>
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    <strong>Absolute Offline:</strong> David can type, create clients, modify measurements, adjust door hinges, or log payments at client sites in remote, zero-reception areas. Key numbers are cached securely inside the phone's built-in LocalStorage database and never lost.
-                    <br />
-                    <strong>Online Mode:</strong> When cell signal restores, sending ERP/Report Layer setup requests or transferring data occurs with zero manual input or sync conflict.
-                  </p>
-                </div>
-
-                {/* Manual Section 3 */}
-                <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
-                  <div className="flex items-center gap-2 text-indigo-400">
-                    <Sliders className="h-4.5 w-4.5" />
-                    <h3 className="text-xs font-bold uppercase font-sans tracking-wide">3. Core Features to Showcase</h3>
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    • <strong className="text-slate-300">Specifications Section:</strong> Keep track of soft-close hinges, board materials (Melawood, PG Bison), door types, and stone suppliers.
-                    <br />
-                    • <strong className="text-slate-300">Site-Notes Amendments:</strong> Correct wrong measurements or specific client requests (like a secret wardrobe compartment) instantly.
-                    <br />
-                    • <strong className="text-slate-300">Visual Vault:</strong> Preview active CAD drawings or 3D renderings to keep the cabinet-making team aligned.
-                  </p>
-                </div>
-
-              </div>
-            </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* --- Main Application Container Viewports --- */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
@@ -1067,8 +1091,222 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              {/* Core KPI metrics Row */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {userRole === 'floor' ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
+                  {/* BENTO CARD 1: ACTIVE PROJECTS CLIENT CARDS */}
+                  <div className={`p-6 rounded-3xl border flex flex-col justify-between transition-all duration-300 ${
+                    isFloorProjectsExpanded ? 'min-h-[500px]' : 'min-h-0'
+                  } ${
+                    isSleekTheme ? 'bg-[#111625] border-slate-800/80 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-850 shadow-sm'
+                  }`}>
+                    <div>
+                      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
+                            <PlusCircle className="h-5 w-5" />
+                          </span>
+                          <div>
+                            <h2 className="text-sm font-black uppercase tracking-widest text-slate-450">Active Projects</h2>
+                            <p className="text-xs text-slate-500">Cabinets & Millwork In-Progress</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono font-bold bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full font-sans">
+                            {activeJobs.length} Live
+                          </span>
+                          <button
+                            id="toggle-floor-projects-btn"
+                            onClick={() => setIsFloorProjectsExpanded(!isFloorProjectsExpanded)}
+                            className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                            title={isFloorProjectsExpanded ? "Collapse Projects" : "Expand Projects"}
+                          >
+                            {isFloorProjectsExpanded ? (
+                              <ChevronUp className="h-5 w-5" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <AnimatePresence initial={false}>
+                        {isFloorProjectsExpanded ? (
+                          <motion.div
+                            key="floor-projects-list"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-3 max-h-[460px] overflow-y-auto pr-1"
+                          >
+                            {activeJobs.map((job) => {
+                              const outstanding = getTasksOutstandingCount(job.id);
+                              return (
+                                <div
+                                  key={job.id}
+                                  id={`floor-project-card-${job.id}`}
+                                  onClick={() => {
+                                    setSelectedJobId(job.id);
+                                    setActiveTab('workflow');
+                                  }}
+                                  className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer hover:scale-[1.015] active:scale-[0.985] flex flex-col justify-between ${
+                                    isSleekTheme 
+                                      ? 'bg-[#151a2d]/50 border-slate-800 hover:border-indigo-500 text-slate-100' 
+                                      : 'bg-slate-50 border-slate-200 hover:border-indigo-400 text-slate-850'
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-start gap-2">
+                                    <div className="min-w-0">
+                                      <h3 className="text-sm font-extrabold truncate text-white">{job.clientName}</h3>
+                                      <p className="text-xs text-slate-400 mt-0.5">📍 Area Suburb: <span className="font-semibold text-slate-350">{job.area}</span></p>
+                                    </div>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border shrink-0 ${
+                                      job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border-indigo-900/30' :
+                                      job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border-rose-900/30' :
+                                      job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border-amber-900/40' :
+                                      'bg-slate-900 text-slate-300 border-slate-800'
+                                    }`}>
+                                      {job.status}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="flex items-center justify-between border-t border-slate-850 pt-2.5 mt-3 text-[11px]">
+                                    <span className="text-slate-400">Task Completion:</span>
+                                    <span className={`font-bold font-mono ${outstanding === 0 ? 'text-emerald-400' : 'text-indigo-400'}`}>
+                                      {outstanding === 0 ? 'All Complete ✓' : `${outstanding} Open Steps`}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="floor-projects-collapsed"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            onClick={() => setIsFloorProjectsExpanded(true)}
+                            className="py-12 px-2 border border-dashed border-slate-850 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/50 transition-all text-slate-400"
+                          >
+                            <span className="text-2xl mb-2">📁</span>
+                            <span className="text-xs font-mono font-bold text-slate-300">Click to expand projects list</span>
+                            <span className="text-[10px] font-mono text-slate-500 mt-1">{activeJobs.length} active clients cached offline</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  {/* BENTO CARD 2: OPEN TASKS CHECKLIST */}
+                  <div className={`p-6 rounded-3xl border flex flex-col justify-between transition-all duration-300 ${
+                    isFloorTasksExpanded ? 'min-h-[500px]' : 'min-h-0'
+                  } ${
+                    isSleekTheme ? 'bg-[#111625] border-slate-800/80 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-850 shadow-sm'
+                  }`}>
+                    <div>
+                      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
+                            <ClipboardList className="h-5 w-5" />
+                          </span>
+                          <div>
+                            <h2 className="text-sm font-black uppercase tracking-widest text-slate-450">Active Checklist</h2>
+                            <p className="text-xs text-slate-500">Outstanding Workshop Tasks</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono font-bold bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full">
+                            {tasks.filter(t => !t.isCompleted && activeJobs.some(j => j.id === t.jobId)).length} Pending
+                          </span>
+                          <button
+                            id="toggle-floor-tasks-btn"
+                            onClick={() => setIsFloorTasksExpanded(!isFloorTasksExpanded)}
+                            className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                            title={isFloorTasksExpanded ? "Collapse Tasks" : "Expand Tasks"}
+                          >
+                            {isFloorTasksExpanded ? (
+                              <ChevronUp className="h-5 w-5" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <AnimatePresence initial={false}>
+                        {isFloorTasksExpanded ? (
+                          <motion.div
+                            key="floor-tasks-list"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-3 max-h-[460px] overflow-y-auto pr-1 font-sans"
+                          >
+                            {(() => {
+                              const floorOpenTasks = tasks.filter(t => !t.isCompleted && activeJobs.some(j => j.id === t.jobId));
+                              if (floorOpenTasks.length === 0) {
+                                return (
+                                  <div className="text-center py-16 text-slate-450 border border-dashed border-slate-800/65 rounded-2xl flex flex-col items-center justify-center">
+                                    <span className="text-3xl mb-2">🌿</span>
+                                    <p className="text-xs font-bold font-mono">No actions required on floor right now!</p>
+                                    <p className="text-[11px] text-slate-550 mt-1 max-w-xs">All active projects have met and sealed their gateway phase targets.</p>
+                                  </div>
+                                );
+                              }
+                              return floorOpenTasks.map((task) => {
+                                const job = jobs.find(j => j.id === task.jobId);
+                                return (
+                                  <div
+                                    key={task.id}
+                                    id={`floor-task-card-${task.id}`}
+                                    onClick={() => handleToggleTask(task.id)}
+                                    className={`p-3.5 rounded-2xl border transition-all duration-155 cursor-pointer flex items-start gap-3 hover:bg-slate-905/30 ${
+                                      isSleekTheme
+                                        ? 'bg-[#151a2d]/50 border-slate-800 hover:border-indigo-500/60'
+                                        : 'bg-slate-50 border-slate-200 hover:border-indigo-400'
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={false}
+                                      readOnly
+                                      className="mt-0.5 rounded border-slate-700 bg-slate-950 text-indigo-650 focus:ring-0 focus:ring-offset-0 shrink-0 h-4 w-4 cursor-pointer"
+                                    />
+                                    <div className="min-w-0 flex-1 font-sans">
+                                      <h4 className="text-xs font-extrabold text-slate-200 leading-snug group-hover:text-indigo-400 transition-colors">
+                                        {task.taskName}
+                                      </h4>
+                                      <p className="text-[10px] text-indigo-405 font-medium mt-0.5">
+                                        📂 {job?.clientName || 'Project'} • <span className="font-mono">{task.stage}</span>
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              });
+                            })()}
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="floor-tasks-collapsed"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            onClick={() => setIsFloorTasksExpanded(true)}
+                            className="py-12 px-2 border border-dashed border-slate-850 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/50 transition-all text-slate-400"
+                          >
+                            <span className="text-2xl mb-2">📋</span>
+                            <span className="text-xs font-mono font-bold text-slate-300">Click to expand tasks list</span>
+                            <span className="text-[10px] font-mono text-slate-550 mt-1">
+                              {tasks.filter(t => !t.isCompleted && activeJobs.some(j => j.id === t.jobId)).length} pending tasks on the floor
+                            </span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Core KPI metrics Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
                 {/* Metric 1 */}
                 <button
@@ -1106,43 +1344,13 @@ export default function App() {
                     <span>Action Checklist Rows</span>
                     <span className="text-[9px] text-indigo-400 uppercase font-bold tracking-tight">Inspect Tasks →</span>
                   </div>
-                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-indigo-400' : 'text-indigo-650'}`}>
+                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-indigo-400' : 'text-indigo-655'}`}>
                     {totalTasksOpen} Open Tasks
                   </div>
                   <p className={`text-[11px] mt-1 truncate ${isSleekTheme ? 'text-slate-400' : 'text-slate-500'}`}>
                     Click to drill down into active checklist
                   </p>
                 </button>
-
-                {/* Metric 3 */}
-                <div className={`${isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20' : 'bg-white border border-gray-150'} p-4 rounded-2xl shadow-xs transition-colors duration-200`}>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans">
-                    Pipeline Locked Valuation
-                  </div>
-                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-emerald-400' : 'text-slate-950'}`}>
-                    R{totalContractPipeline.toLocaleString()}
-                  </div>
-                  <p className={`text-[11px] mt-1 font-semibold ${isSleekTheme ? 'text-slate-450' : 'text-slate-500'}`}>
-                    Upgrade to ERP/Report Layer
-                  </p>
-                </div>
-
-                {/* Metric 4 */}
-                <div className={`${isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20' : 'bg-white border border-gray-150'} p-4 rounded-2xl shadow-xs transition-colors duration-200`}>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans">
-                    Project Health
-                  </div>
-                  <div className="text-2xl font-sans font-extrabold mt-1 flex items-center gap-2">
-                    {alertProjectsCount === 0 ? (
-                      <span className="text-emerald-500 text-lg">100% Healthy</span>
-                    ) : (
-                      <span className="text-amber-500 text-lg">{alertProjectsCount} Alerts Open</span>
-                    )}
-                  </div>
-                  <p className={`text-[11px] mt-1 ${isSleekTheme ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {alertProjectsCount === 0 ? 'Everything On Track' : 'Needs direct consultation focus'}
-                  </p>
-                </div>
 
               </div>
 
@@ -1241,7 +1449,7 @@ export default function App() {
                                 <div className="flex flex-col items-end shrink-0 self-center">
                                   <div className="text-[9px] text-slate-500 uppercase">Valuation</div>
                                   <div className="text-xs font-mono font-extrabold text-slate-200">R{job.quoteValue.toLocaleString()}</div>
-                                  <div className="text-[9.5px] bg-indigo-600 hover:bg-indigo-505 text-white font-bold px-2 py-1 rounded-lg mt-1.5 group-hover:translate-x-1 duration-150">
+                                  <div className="text-[9.5px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded-lg mt-1.5 group-hover:translate-x-1 duration-150">
                                     Open →
                                   </div>
                                 </div>
@@ -1307,220 +1515,10 @@ export default function App() {
                 )}
               </AnimatePresence>
 
-              {/* What needs attention banner section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* Left Alert card: Attention Job or general health notification */}
-                {attentionJob ? (
-                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-200 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
-                    isSleekTheme
-                      ? 'bg-[#111625] border-slate-800/80 text-slate-100 shadow-slate-950/20 hover:border-amber-500/50'
-                      : 'bg-white border-gray-150 text-slate-800 hover:border-amber-400'
-                  }`}>
-                    {/* Colored top edge based on health */}
-                    <span className={`absolute top-0 inset-x-0 h-1.5 ${
-                      attentionJob.health === 'Needs Attention' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500 animate-pulse'
-                    }`} />
-
-                    <div>
-                      {/* Header badge */}
-                      <div className="flex justify-between items-start gap-1 mb-2">
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
-                          isSleekTheme ? 'bg-slate-900/80 text-amber-300 border-slate-800/50' : 'bg-amber-50 text-amber-700 border-amber-100'
-                        }`}>
-                          <AlertTriangle className="h-3.5 w-3.5" />
-                          ATTENTION REQUIRED
-                        </span>
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                          isSleekTheme ? 'bg-amber-950/80 text-amber-300 border border-amber-900/30' : 'bg-amber-100/80 text-amber-800'
-                        }`}>
-                          {attentionJob.health}
-                        </span>
-                      </div>
-
-                      {/* Title & metadata */}
-                      <h3 className={`text-md font-sans font-extrabold duration-150 ${isSleekTheme ? 'text-[#f1f5f9] group-hover/card:text-amber-300' : 'text-slate-900 group-hover/card:text-amber-700'}`}>
-                        {attentionJob.clientName}
-                      </h3>
-                      <p className="text-[11px] text-slate-450 font-medium font-sans flex items-center gap-1 mt-0.5">
-                        📍 {attentionJob.area} • Phase: {attentionJob.status.substring(2)}
-                      </p>
-
-                      {/* Comment */}
-                      <p className={`text-[11px] mt-2.5 leading-relaxed line-clamp-2 ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
-                        {attentionJob.comments || 'Ensure technical specifications and timelines are aligned.'}
-                      </p>
-                    </div>
-
-                    {/* Check In Action block */}
-                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
-                      <div>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ACTION GATEWAY</span>
-                        <span className={`text-xs font-sans font-bold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-800'}`}>
-                          Specs Review
-                        </span>
-                      </div>
-                      <button
-                        id="attn-smith-btn"
-                        onClick={() => {
-                          setSelectedJobId(attentionJob.id);
-                          setActiveTab('specs');
-                        }}
-                        className={`cursor-pointer group/btn select-none font-extrabold text-xs px-4 py-2 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm ${
-                          isSleekTheme
-                            ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
-                            : 'bg-amber-650 hover:bg-amber-700 text-white'
-                        }`}
-                      >
-                        <span>Check In</span>
-                        <ArrowRight className="h-3.5 w-3.5 transform transition-transform duration-200 group-hover/btn:translate-x-1" />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-200 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
-                    isSleekTheme
-                      ? 'bg-[#111625] border-slate-800/80 text-slate-100'
-                      : 'bg-white border-gray-150 text-slate-800'
-                  }`}>
-                    <span className="absolute top-0 inset-x-0 h-1.5 bg-emerald-500" />
-                    <div>
-                      <div className="flex justify-between items-start gap-1 mb-2">
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
-                          isSleekTheme ? 'bg-slate-900/80 text-emerald-350 border-slate-800/50' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                        }`}>
-                          <CheckCircle className="h-3.5 w-3.5" />
-                          SYSTEM COMPLIANT
-                        </span>
-                      </div>
-                      <h3 className={`text-md font-sans font-extrabold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'}`}>
-                        All Handshakes Operational
-                      </h3>
-                      <p className={`text-[11px] mt-2.5 leading-relaxed ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
-                        Active operations and installations are moving safely alongside targets with zero active alert incidents.
-                      </p>
-                    </div>
-                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-450 font-sans block">SLA INDEX</span>
-                      <span className="text-xs font-sans font-bold text-emerald-500">
-                        100% Healthy ✓
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Right Alert card: Awaiting Deposit or high value lead check */}
-                {awaitingDepositJob ? (
-                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-200 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
-                    isSleekTheme
-                      ? 'bg-[#111625] border-slate-800/80 text-slate-100 shadow-slate-950/20 hover:border-indigo-550/50'
-                      : 'bg-white border-gray-150 text-slate-800 hover:border-indigo-400'
-                  }`}>
-                    {/* Colored top edge based on health */}
-                    <span className="absolute top-0 inset-x-0 h-1.5 bg-indigo-500 animate-pulse" />
-
-                    <div>
-                      {/* Header badge */}
-                      <div className="flex justify-between items-start gap-1 mb-2">
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
-                          isSleekTheme ? 'bg-slate-900/80 text-[#818cf8] border-slate-800/50' : 'bg-indigo-50 text-indigo-700 border-indigo-100'
-                        }`}>
-                          <Info className="h-3.5 w-3.5" />
-                          DEPOSIT CHECK
-                        </span>
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                          isSleekTheme ? 'bg-indigo-950/80 text-indigo-300 border border-indigo-900/30' : 'bg-indigo-100/80 text-indigo-800'
-                        }`}>
-                          Awaiting Payment
-                        </span>
-                      </div>
-
-                      {/* Title & valuation */}
-                      <h3 className={`text-md font-sans font-extrabold duration-155 ${isSleekTheme ? 'text-[#f1f5f9] group-hover:card:text-indigo-400' : 'text-slate-900 group-hover:card:text-indigo-655'}`}>
-                        {awaitingDepositJob.clientName}
-                      </h3>
-                      <p className="text-[11px] text-slate-450 font-medium font-sans flex items-center gap-1 mt-0.5">
-                        📍 {awaitingDepositJob.area} • Quotation Value: R{awaitingDepositJob.quoteValue.toLocaleString()}
-                      </p>
-
-                      {/* Info description */}
-                      <p className={`text-[11px] mt-2.5 leading-relaxed line-clamp-2 ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
-                        Currently locked in <strong>7 Awaiting Deposit</strong>. Verify booking deposit of 60% (R{(awaitingDepositJob.quoteValue * 0.6).toLocaleString()}) to release project to workshop fabrication.
-                      </p>
-                    </div>
-
-                    {/* Check In Action block */}
-                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
-                      <div>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ESCROW MATURITY</span>
-                        <span className={`text-xs font-sans font-bold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-800'}`}>
-                          Funding Status
-                        </span>
-                      </div>
-                      <button
-                        id="attn-jones-btn"
-                        onClick={() => {
-                          setSelectedJobId(awaitingDepositJob.id);
-                          setActiveTab('financials');
-                        }}
-                        className={`cursor-pointer group/btn select-none font-extrabold text-xs px-4 py-2 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm ${
-                          isSleekTheme
-                            ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30'
-                            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                        }`}
-                      >
-                        <span>Check In</span>
-                        <ArrowRight className="h-3.5 w-3.5 transform transition-transform duration-200 group-hover/btn:translate-x-1" />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`group/card border rounded-2xl p-5 shadow-xs transition-all duration-155 relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
-                    isSleekTheme
-                      ? 'bg-[#111625] border-slate-800/80 text-slate-100'
-                      : 'bg-white border-gray-150 text-slate-800'
-                  }`}>
-                    <span className="absolute top-0 inset-x-0 h-1.5 bg-indigo-500" />
-                    <div>
-                      <div className="flex justify-between items-start gap-1 mb-2">
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
-                          isSleekTheme ? 'bg-slate-900/80 text-indigo-350 border-slate-800/50' : 'bg-indigo-50 text-indigo-750 border-indigo-100'
-                        }`}>
-                          <TrendingUp className="h-3.5 w-3.5 animate-pulse" />
-                          PIPELINE LOCKED
-                        </span>
-                      </div>
-                      <h3 className={`text-md font-sans font-extrabold ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'}`}>
-                        Active Contract Revenue
-                      </h3>
-                      <p className={`text-[11px] mt-2.5 leading-relaxed ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
-                        Total contract pipeline contains R{totalContractPipeline.toLocaleString()} of active workspace opportunities. Settle payments and complete milestones to unlock payouts.
-                      </p>
-                    </div>
-                    <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-450 font-sans block">TOTAL SECURED</span>
-                      <span className="text-xs font-sans font-bold text-indigo-400">
-                        R{totalContractPipeline.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-
               {/* Jobs section Header & Filter controls */}
               <div className={`${isSleekTheme ? 'bg-[#111625] border border-slate-800/80' : 'bg-white border border-gray-150'} rounded-2xl p-5 shadow-xs space-y-4`}>
                 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                  <div>
-                    <h2 className={`text-lg font-sans font-extrabold tracking-tight ${isSleekTheme ? 'text-white' : 'text-gray-900'}`}>
-                      My Operations Dashboard
-                    </h2>
-                    <p className={`text-xs ${isSleekTheme ? 'text-slate-450' : 'text-slate-500'}`}>
-                      Open any project passport to access commands, specifications, work checklist, and client files.
-                    </p>
-                  </div>
-
                   {/* Filter chips category row */}
                   <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 pb-0 select-none">
                     {([
@@ -1569,80 +1567,83 @@ export default function App() {
 
               {/* --- Core Active Operations Layout Engines --- */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredJobs.map((job) => {
-                    const outstandingCount = getTasksOutstandingCount(job.id);
-                    return (
-                      <div
-                        key={job.id}
-                        id={`job-card-${job.id}`}
-                        onClick={() => {
-                          setSelectedJobId(job.id);
-                          setActiveTab('workflow');
-                        }}
-                        className={`group border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
-                          isSleekTheme
-                            ? 'bg-[#111625] border-slate-800/80 hover:border-indigo-500 hover:shadow-indigo-950/20 text-slate-100'
-                            : 'bg-white border-gray-150 hover:border-indigo-400 text-slate-800'
-                        }`}
-                      >
-                        {/* Colored top edge based on health */}
-                        <span className={`absolute top-0 inset-x-0 h-1.5 ${
-                          job.health === 'On Track' ? 'bg-emerald-500' :
-                          job.health === 'Needs Attention' ? 'bg-amber-500' : 'bg-rose-500'
-                        }`} />
+                  {filteredJobs
+                    .filter((job) => job.status !== '12 Complete')
+                    .slice(0, 6)
+                    .map((job) => {
+                      const outstandingCount = getTasksOutstandingCount(job.id);
+                      return (
+                        <div
+                          key={job.id}
+                          id={`job-card-${job.id}`}
+                          onClick={() => {
+                            setSelectedJobId(job.id);
+                            setActiveTab('workflow');
+                          }}
+                          className={`group border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
+                            isSleekTheme
+                              ? 'bg-[#111625] border-slate-800/80 hover:border-indigo-500 hover:shadow-indigo-950/20 text-slate-100'
+                              : 'bg-white border-gray-150 hover:border-indigo-400 text-slate-800'
+                          }`}
+                        >
+                          {/* Colored top edge based on health */}
+                          <span className={`absolute top-0 inset-x-0 h-1.5 ${
+                            job.health === 'On Track' ? 'bg-emerald-500' :
+                            job.health === 'Needs Attention' ? 'bg-amber-500' : 'bg-rose-500'
+                          }`} />
 
-                        <div>
-                          {/* Header metadata */}
-                          <div className="flex justify-between items-start gap-1 mb-2">
-                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                              isSleekTheme ? 'bg-slate-900/80 text-indigo-350 border-slate-800/50' : 'bg-slate-50 text-slate-400 border-gray-100'
-                            }`}>
-                              {job.id}
-                            </span>
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                              job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border border-indigo-900/30' :
-                              job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border border-rose-900/30 font-semibold' :
-                              job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border border-amber-900/30' : 
-                              (isSleekTheme ? 'bg-slate-900 text-slate-300 border border-slate-800' : 'bg-slate-100 text-slate-600')
-                            }`}>
-                              {job.status}
-                            </span>
-                          </div>
-
-                          {/* Title client */}
-                          <h3 className={`text-md font-sans font-extrabold duration-150 ${isSleekTheme ? 'text-[#f1f5f9] group-hover:text-indigo-400' : 'text-slate-900 group-hover:text-indigo-600'}`}>
-                            {job.clientName}
-                          </h3>
-                          <p className="text-[11px] text-slate-400 font-medium font-sans flex items-center gap-1 mt-0.5">
-                            📍 {job.area}
-                          </p>
-
-                          {/* Description snippet */}
-                          <p className={`text-[11px] line-clamp-2 mt-2 leading-relaxed h-8 ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
-                            {job.comments}
-                          </p>
-                        </div>
-
-                        {/* Footer tracking block */}
-                        <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
                           <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ACTIVE STATUS TASKS</span>
-                            <span className={`text-xs font-sans font-bold ${outstandingCount > 0 ? (isSleekTheme ? 'text-indigo-400' : 'text-indigo-600') : 'text-emerald-500'}`}>
-                              {outstandingCount === 0 ? 'All Completed ✓' : `${outstandingCount} Tasks Outstanding`}
-                            </span>
+                            {/* Header metadata */}
+                            <div className="flex justify-between items-start gap-1 mb-2">
+                              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                                isSleekTheme ? 'bg-slate-900/80 text-indigo-350 border-slate-800/50' : 'bg-slate-50 text-slate-400 border-gray-100'
+                              }`}>
+                                {job.id}
+                              </span>
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                                job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border border-indigo-900/30' :
+                                job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border border-rose-900/30 font-semibold' :
+                                job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border border-amber-900/30' : 
+                                (isSleekTheme ? 'bg-slate-900 text-slate-300 border border-slate-800' : 'bg-slate-100 text-slate-600')
+                              }`}>
+                                {job.status}
+                              </span>
+                            </div>
+
+                            {/* Title client */}
+                            <h3 className={`text-md font-sans font-extrabold duration-150 ${isSleekTheme ? 'text-[#f1f5f9] group-hover:text-indigo-400' : 'text-slate-900 group-hover:text-indigo-600'}`}>
+                              {job.clientName}
+                            </h3>
+                            <p className="text-[11px] text-slate-400 font-medium font-sans flex items-center gap-1 mt-0.5">
+                              📍 {job.area}
+                            </p>
+
+                            {/* Description snippet */}
+                            <p className={`text-[11px] line-clamp-2 mt-2 leading-relaxed h-8 ${isSleekTheme ? 'text-slate-400' : 'text-gray-500'}`}>
+                              {job.comments}
+                            </p>
                           </div>
 
-                          <div className="text-right">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">Quote Settle</span>
-                            <span className={`text-xs font-sans font-extrabold ${isSleekTheme ? 'text-[#f8fafc]' : 'text-gray-800'}`}>
-                              R{job.quoteValue.toLocaleString()}
-                            </span>
+                          {/* Footer tracking block */}
+                          <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ACTIVE STATUS TASKS</span>
+                              <span className={`text-xs font-sans font-bold ${outstandingCount > 0 ? (isSleekTheme ? 'text-indigo-400' : 'text-indigo-650') : 'text-emerald-500'}`}>
+                                {outstandingCount === 0 ? 'All Completed ✓' : `${outstandingCount} Tasks Outstanding`}
+                              </span>
+                            </div>
+
+                            <div className="text-right">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-450 block leading-tight font-sans">Quote Settle</span>
+                              <span className={`text-xs font-sans font-extrabold ${isSleekTheme ? 'text-[#f8fafc]' : 'text-gray-800'}`}>
+                                R{job.quoteValue.toLocaleString()}
+                              </span>
+                            </div>
                           </div>
+
                         </div>
-
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
               </div>
 
               {/* Layout Option 2: Bento Dashboard Layout (Retired) */}
@@ -2070,6 +2071,8 @@ export default function App() {
 
               {/* Power BI Sync widget under jobs list visual */}
               <div className="pt-6" />
+            </>
+          )}
 
             </motion.div>
           ) : (

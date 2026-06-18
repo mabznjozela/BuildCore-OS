@@ -79,6 +79,17 @@
         "createdAt": { "type": "string" }
       },
       "required": ["id", "jobId", "content", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Represents the last action audit log metadata",
+      "type": "object",
+      "properties": {
+        "lastEditedBy": { "type": "string" },
+        "action": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["lastEditedBy", "action", "timestamp"]
     }
   },
   "firestore": {
@@ -101,6 +112,10 @@
     "/notes/{noteId}": {
       "schema": "JobNote",
       "description": "Day-to-day conversation and collaborative update logs"
+    },
+    "/metadata/{docId}": {
+      "schema": "AuditLog",
+      "description": "Audit trail metadata for platform wide tracking"
     }
   }
 }
