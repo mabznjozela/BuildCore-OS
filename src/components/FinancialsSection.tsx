@@ -61,7 +61,7 @@ export default function FinancialsSection({ job, financials, onAddTransaction }:
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4 mb-6 gap-3">
         <div>
           <h2 className="text-xl font-sans font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <Coins className="h-5 w-5 text-indigo-600" />
+            <Coins className="h-5 w-5 text-emerald-600" />
             Financial Health
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -116,9 +116,9 @@ export default function FinancialsSection({ job, financials, onAddTransaction }:
         </div>
 
         {/* Outstanding Balance */}
-        <div className="bg-indigo-50/10 border border-indigo-100/40 p-4 rounded-xl">
-          <div className="text-[10px] font-bold text-indigo-800/80 uppercase tracking-wider">Outstanding Balance</div>
-          <div className="text-lg md:text-xl font-sans font-extrabold text-indigo-950 mt-1">
+        <div className="bg-red-50/10 border border-red-100/40 p-4 rounded-xl">
+          <div className="text-[10px] font-bold text-red-800/80 uppercase tracking-wider">Outstanding Balance</div>
+          <div className="text-lg md:text-xl font-sans font-extrabold text-red-950 mt-1">
             R{outstandingBalance.toLocaleString()}
           </div>
           <span className={`text-[10px] font-semibold font-sans ${outstandingBalance === 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
@@ -159,7 +159,7 @@ export default function FinancialsSection({ job, financials, onAddTransaction }:
                 id={`fin-select-type-${job.id}`}
                 value={txType}
                 onChange={(e) => setTxType(e.target.value as any)}
-                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500 text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-slate-500 text-gray-950 font-sans"
               >
                 <option value="expense">🔴 Expense (Money Out)</option>
                 <option value="payment">🟢 Payment Received (Money In)</option>
@@ -176,7 +176,7 @@ export default function FinancialsSection({ job, financials, onAddTransaction }:
                 required
                 min="1"
                 placeholder="e.g. 15000"
-                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500 text-gray-950 font-sans font-semibold"
+                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-slate-500 text-gray-950 font-sans font-semibold"
               />
             </div>
 
@@ -189,7 +189,7 @@ export default function FinancialsSection({ job, financials, onAddTransaction }:
                 onChange={(e) => setDescription(e.target.value)}
                 required
                 placeholder="e.g. Oak Veneer board sheets, Hettich hinges"
-                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500 text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-slate-500 text-gray-950 font-sans"
               />
             </div>
 
@@ -201,7 +201,7 @@ export default function FinancialsSection({ job, financials, onAddTransaction }:
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="e.g. Timber, Quartzite, Commission"
-                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500 text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-slate-500 text-gray-950 font-sans"
               />
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function FinancialsSection({ job, financials, onAddTransaction }:
             <button
               id={`fin-submit-btn-${job.id}`}
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg cursor-pointer"
+              className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg cursor-pointer"
             >
               Add Ledger Row
             </button>

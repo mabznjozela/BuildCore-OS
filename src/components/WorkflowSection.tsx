@@ -207,7 +207,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
           <h3 className="text-xs font-sans font-extrabold uppercase tracking-widest text-gray-400">
             Project Phase Track (12 Gateways)
           </h3>
-          <span className="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full animate-pulse">
+          <span className="text-xs bg-red-50 text-red-700 font-bold px-3 py-1 rounded-full animate-pulse">
             Active: {job.status}
           </span>
         </div>
@@ -226,7 +226,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
                 onClick={() => onUpdateStatus(step.status)}
                 className={`flex-shrink-0 text-[11px] font-sans font-bold px-3 py-2 rounded-xl transition-all border flex items-center gap-1.5 cursor-pointer ${
                   isCurrent
-                    ? 'bg-indigo-600 border-indigo-600 text-white ring-4 ring-indigo-500/15'
+                    ? 'bg-slate-800 border-red-600 text-white ring-4 ring-slate-500/15'
                     : isCompleted
                     ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
                     : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
@@ -254,7 +254,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
           </div>
 
           <div className="text-right">
-            <span className="text-xs font-bold text-indigo-700 block sm:inline mr-2">
+            <span className="text-xs font-bold text-red-700 block sm:inline mr-2">
               Progress: {completedCount} of {totalCount} Complete
             </span>
             <span className="text-xs text-gray-400 font-medium">({percentComplete.toFixed(0)}%)</span>
@@ -264,7 +264,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
         {/* Progress Bar */}
         <div className="w-full bg-slate-250 rounded-full h-2 mb-6 relative overflow-hidden">
           <motion.div
-            className="bg-indigo-600 h-2 rounded-full"
+            className="bg-slate-800 h-2 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${percentComplete}%` }}
             transition={{ type: 'spring', damping: 15, stiffness: 100 }}
@@ -297,7 +297,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
                       <CheckSquare className="h-4.5 w-4.5 text-emerald-600" />
                     </motion.div>
                   ) : (
-                    <Square className="h-4.5 w-4.5 text-indigo-400 hover:text-indigo-600 transition-colors" />
+                    <Square className="h-4.5 w-4.5 isSleekTheme ? 'text-slate-300' : 'text-slate-700' hover:text-emerald-600 transition-colors" />
                   )}
                 </div>
                 <div className="text-xs font-sans text-left leading-relaxed">
@@ -315,7 +315,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
               initial={{ opacity: 0, y: 15, height: 0 }}
               animate={{ opacity: 1, y: 0, height: 'auto' }}
               exit={{ opacity: 0, y: -15, height: 0 }}
-              className="mt-5 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-indigo-500/10 border border-emerald-500/25 text-center flex flex-col items-center justify-center overflow-hidden"
+              className="mt-5 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-red-500/10 border border-emerald-500/25 text-center flex flex-col items-center justify-center overflow-hidden"
             >
               <Sparkles className="h-6 w-6 text-emerald-500 animate-bounce mb-1" />
               <span className="text-xs font-sans font-extrabold text-emerald-800 uppercase tracking-wider">
@@ -340,7 +340,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
               <button
                 id="auto-advance-to-install-btn"
                 onClick={() => onUpdateStatus('10 Installation Scheduled')}
-                className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.2 rounded-lg flex items-center gap-1 cursor-pointer transition-all active:scale-95 text-[11px]"
+                className="mt-2 bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.2 rounded-lg flex items-center gap-1 cursor-pointer transition-all active:scale-95 text-[11px]"
               >
                 Advance to 10 Installation Scheduled
                 <ArrowRight className="h-3 w-3" />
@@ -369,7 +369,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
                     onChange={(e) => setNewTaskName(e.target.value)}
                     placeholder="Type or speak custom task description..."
                     required
-                    className="flex-1 text-xs border border-gray-350 rounded-lg pl-2.5 pr-10 py-2 bg-white text-gray-950 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+                    className="flex-1 text-xs border border-gray-350 rounded-lg pl-2.5 pr-10 py-2 bg-white text-gray-950 focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                   />
                   <button
                     type="button"
@@ -387,7 +387,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
                 <button
                   id={`task-submit-add-btn-${job.id}`}
                   type="submit"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-2 rounded-lg cursor-pointer transition-colors active:scale-95"
+                  className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-3 py-2 rounded-lg cursor-pointer transition-colors active:scale-95"
                 >
                   Insert
                 </button>
@@ -412,7 +412,7 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
                 animate={{ opacity: 1 }}
                 id={`task-trigger-form-btn-${job.id}`}
                 onClick={() => setShowAddTaskInput(true)}
-                className="flex items-center gap-1 text-[11px] font-sans font-bold text-indigo-700 hover:text-indigo-800 transition-colors cursor-pointer"
+                className="flex items-center gap-1 text-[11px] font-sans font-bold text-red-700 hover:text-red-800 transition-colors cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Add Action Milestone Row

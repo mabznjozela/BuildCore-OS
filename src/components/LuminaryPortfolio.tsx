@@ -57,6 +57,7 @@ interface LuminaryPortfolioProps {
 }
 
 export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, currentJobsCount = 0 }: LuminaryPortfolioProps) {
+  const isSleekTheme = true;
   const [activeNiche, setActiveNiche] = useState<string>('manufacturing');
   const [activePackage, setActivePackage] = useState<number>(1);
   const [customClientName, setCustomClientName] = useState<string>('');
@@ -276,18 +277,18 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
   return (
     <div id="luminary-portfolio-root" className="space-y-8 font-sans pb-12">
       {/* Hero consulting header */}
-      <div className="bg-gradient-to-r from-slate-950 via-[#0a0c16] to-[#120f26] border border-indigo-900/30 rounded-3xl p-8 relative overflow-hidden shadow-xl">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 blur-3xl rounded-full pointer-events-none" />
+      <div className="bg-gradient-to-r from-slate-950 via-[#0a0c16] to-[#120f26] border border-slate-800/40 rounded-3xl p-8 relative overflow-hidden shadow-xl">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/5 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-10 w-40 h-40 bg-purple-500/5 blur-2xl rounded-full pointer-events-none" />
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
               </span>
-              <span className="text-xs bg-indigo-500/10 border border-indigo-550/20 text-indigo-400 font-extrabold px-3 py-1 rounded-full uppercase tracking-widest">
+              <span className={`text-xs bg-red-500/10 border border-slate-800/80 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-extrabold px-3 py-1 rounded-full uppercase tracking-widest`.trim()}>
                 Operations Intelligence System
               </span>
             </div>
@@ -300,7 +301,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
           </div>
           <div className="shrink-0 bg-slate-900/80 border border-slate-800/80 p-4 rounded-2xl flex flex-col items-center justify-center text-center">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">Operations Mastery</span>
-            <span className="text-2xl font-bold font-sans text-indigo-400 mt-1">SME OS</span>
+            <span className={`text-2xl font-bold font-sans ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} mt-1`.trim()}>SME OS</span>
             <p className="text-[11px] text-slate-400 mt-1">Cape Town, South Africa</p>
           </div>
         </div>
@@ -312,7 +313,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
         {/* Niche Selector on Left */}
         <div className="space-y-4">
           <div className="p-1">
-            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono">Select SME Target Niche</h3>
+            <h3 className={`text-sm font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest font-mono`.trim()}>Select SME Target Niche</h3>
             <p className="text-xs text-slate-400 mt-1">Choose a sector to visualize operations mapping & actual business pain areas.</p>
           </div>
 
@@ -329,14 +330,12 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                   }}
                   className={`w-full text-left p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-start gap-4 ${
                     activeNiche === n.id
-                      ? 'bg-gradient-to-r from-[#171a30] to-[#121626] border-indigo-500/60 shadow-md ring-1 ring-indigo-550/20'
+                      ? 'bg-gradient-to-r from-[#171a30] to-[#121626] border-red-500/60 shadow-md ring-1 ring-slate-500/20'
                       : 'bg-[#111625] border-slate-800/80 hover:bg-slate-900/50 hover:border-slate-700/80'
                   }`}
                 >
                   <div className={`p-2.5 rounded-xl border shrink-0 ${
-                    activeNiche === n.id 
-                      ? 'bg-indigo-900/30 border-indigo-500/30 text-indigo-400' 
-                      : 'bg-slate-900 border-slate-800 text-slate-400'
+                    activeNiche === n.id ? `bg-slate-900 border-slate-700/60 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'}` : 'bg-slate-900 border-slate-800 text-slate-400'
                   }`}>
                     <IconComp className="h-5 w-5" />
                   </div>
@@ -345,7 +344,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                       {n.name}
                     </h4>
                     <p className="text-xs text-slate-400 mt-1 leading-snug line-clamp-1">{n.tagline}</p>
-                    <span className="text-[10px] text-indigo-450 font-bold block mt-1.5 uppercase font-mono">Review Blueprint →</span>
+                    <span className="text-[10px] text-red-450 font-bold block mt-1.5 uppercase font-mono">Review Blueprint →</span>
                   </div>
                 </button>
               );
@@ -359,19 +358,19 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
             </div>
             <div className="text-[10px] font-bold text-slate-450 uppercase tracking-wider font-mono">The Real Enemy (David’s Reality)</div>
             <p className="text-xs text-slate-300 font-sans leading-relaxed">
-              When David says <em className="text-indigo-400 font-bold">"We already have a system"</em>, he doesn't mean SAP or Salesforce. He is stitch-running your competitors, raising massive weekend stress:
+              When David says <em className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold`.trim()}>"We already have a system"</em>, he doesn't mean SAP or Salesforce. He is stitch-running your competitors, raising massive weekend stress:
             </p>
             <ul className="space-y-2 text-xs text-slate-400">
               <li className="flex items-start gap-2">
-                <span className="text-indigo-400 mt-0.5">•</span>
+                <span className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} mt-0.5`.trim()}>•</span>
                 <span>The shared client WhatsApp thread (flooded with notifications)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-indigo-400 mt-0.5">•</span>
+                <span className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} mt-0.5`.trim()}>•</span>
                 <span>Active physical whiteboards (easily rubbed off)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-indigo-400 mt-0.5">•</span>
+                <span className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} mt-0.5`.trim()}>•</span>
                 <span>The owner’s fragile, over-stretched memories.</span>
               </li>
             </ul>
@@ -383,7 +382,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
           <div className="bg-[#111625] border border-slate-800/80 rounded-3xl p-6 relative">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800/40">
               <div>
-                <span className="text-[9.5px] font-bold bg-[#0d0f19] border border-slate-800 text-indigo-400 font-mono px-2 py-0.5 rounded tracking-widest uppercase">
+                <span className={`text-[9.5px] font-bold bg-[#0d0f19] border border-slate-800 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono px-2 py-0.5 rounded tracking-widest uppercase`.trim()}>
                   ACTIVE CASE STUDY Blueprints
                 </span>
                 <h3 className="text-md sm:text-lg font-sans font-extrabold mt-1 text-slate-100">
@@ -426,30 +425,30 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
 
             {/* SME Logical Flowchart: Lead -> Process -> Delivery -> Reporting */}
             <div className="mt-6 pt-5 border-t border-slate-800/40">
-              <span className="text-[9px] font-bold text-indigo-400 tracking-wider font-mono uppercase block mb-3">
+              <span className={`text-[9px] font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} tracking-wider font-mono uppercase block mb-3`.trim()}>
                 Identical Logical Pattern Map: Lead ➜ Process ➜ Delivery ➜ Reporting
               </span>
               
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5">
                 
-                <div className="bg-[#141829] p-3 rounded-xl border border-indigo-950/40 text-center relative group">
-                  <span className="text-[9px] block text-indigo-400 font-mono tracking-tight font-bold uppercase mb-1">1. LEAD</span>
+                <div className="bg-[#141829] p-3 rounded-xl border border-red-950/40 text-center relative group">
+                  <span className={`text-[9px] block ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono tracking-tight font-bold uppercase mb-1`.trim()}>1. LEAD</span>
                   <p className="text-xs text-slate-200 leading-snug font-sans font-bold py-1.5 min-h-[50px] flex items-center justify-center">
                     {currentNiche.operationalPattern.lead}
                   </p>
                   <span className="text-[9px] block text-slate-550 border-t border-slate-800/40 mt-1 pt-1 italic">Customer Gate</span>
                 </div>
 
-                <div className="bg-[#141829] p-3 rounded-xl border border-indigo-950/40 text-center relative group">
-                  <span className="text-[9px] block text-indigo-400 font-mono tracking-tight font-bold uppercase mb-1">2. PROCESS</span>
+                <div className="bg-[#141829] p-3 rounded-xl border border-red-950/40 text-center relative group">
+                  <span className={`text-[9px] block ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono tracking-tight font-bold uppercase mb-1`.trim()}>2. PROCESS</span>
                   <p className="text-xs text-slate-200 leading-snug font-sans font-bold py-1.5 min-h-[50px] flex items-center justify-center">
                     {currentNiche.operationalPattern.process}
                   </p>
                   <span className="text-[9px] block text-slate-550 border-t border-slate-800/40 mt-1 pt-1 italic">Workshop Track</span>
                 </div>
 
-                <div className="bg-[#141829] p-3 rounded-xl border border-indigo-950/40 text-center relative group">
-                  <span className="text-[9px] block text-indigo-400 font-mono tracking-tight font-bold uppercase mb-1">3. DELIVERY</span>
+                <div className="bg-[#141829] p-3 rounded-xl border border-red-950/40 text-center relative group">
+                  <span className={`text-[9px] block ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono tracking-tight font-bold uppercase mb-1`.trim()}>3. DELIVERY</span>
                   <p className="text-xs text-slate-200 leading-snug font-sans font-bold py-1.5 min-h-[50px] flex items-center justify-center">
                     {currentNiche.operationalPattern.delivery}
                   </p>
@@ -470,12 +469,12 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
             </div>
 
             {/* Live Solution Delivery summary */}
-            <div className="mt-5 p-4 bg-indigo-950/20 border border-indigo-900/30 rounded-2xl flex items-start gap-3">
-              <div className="p-1.5 rounded-lg bg-indigo-900/40 border border-indigo-550/30 text-indigo-450 mt-0.5 shrink-0">
+            <div className="mt-5 p-4 bg-slate-900/20 border border-slate-800/40 rounded-2xl flex items-start gap-3">
+              <div className="p-1.5 rounded-lg bg-red-900/40 border border-slate-700/60 text-red-450 mt-0.5 shrink-0">
                 <Sparkles className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Bespoke Design Setup Strategy</span>
+                <span className={`text-[9px] font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest font-mono`.trim()}>Bespoke Design Setup Strategy</span>
                 <p className="text-xs text-slate-200 leading-relaxed font-sans font-semibold mt-0.5">
                   {currentNiche.sampleSolution}
                 </p>
@@ -488,7 +487,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
 
       {/* Segment 3: Custom Business Operating System & Packaged Layers */}
       <div className="p-1">
-        <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono">Modular Operational Packages (The SA SME Pitch)</h3>
+        <h3 className={`text-sm font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest font-mono`.trim()}>Modular Operational Packages (The SA SME Pitch)</h3>
         <p className="text-xs text-slate-400 mt-1">
           Stop selling complex software terms like database, ERP, and CRM. Sell setup solutions paired with transparent retained values.
         </p>
@@ -503,18 +502,18 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
               onClick={() => handleToggleAddon(p.id)}
               className={`p-6 rounded-3xl border transition-all duration-200 cursor-pointer relative flex flex-col justify-between min-h-[400px] ${
                 isSelected
-                  ? 'bg-gradient-to-br from-[#12162a] to-[#0f121d] border-indigo-550 ring-2 ring-indigo-500/10'
+                  ? 'bg-gradient-to-br from-[#12162a] to-[#0f121d] border-red-500 ring-2 ring-slate-500/10'
                   : 'bg-[#111625] border-slate-800/80 hover:bg-slate-900/50 hover:border-slate-800'
               }`}
             >
               <div>
                 {/* Top header & Selector */}
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-400 font-mono">
+                  <span className={`text-[10px] uppercase font-bold tracking-widest ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono`.trim()}>
                     Package {p.level} {p.level === 3 ? '• Growth Gate' : ''}
                   </span>
                   <div className={`h-5 w-5 rounded-md flex items-center justify-center border transition-colors ${
-                    isSelected ? 'bg-indigo-600 border-indigo-400 text-white' : 'border-slate-800 bg-slate-900'
+                    isSelected ? 'bg-slate-800 border-red-400 text-white' : 'border-slate-800 bg-slate-900'
                   }`}>
                     {isSelected && <span className="text-xs font-bold font-sans">✓</span>}
                   </div>
@@ -529,7 +528,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                 <div className="mt-5 pt-4 border-t border-slate-800/60 space-y-2.5">
                   {p.specs.map((spec, i) => (
                     <div key={i} className="flex items-start gap-2 text-xs">
-                      <CheckCircle className="h-3.5 w-3.5 text-indigo-400 shrink-0 mt-0.5" />
+                      <CheckCircle className={`h-3.5 w-3.5 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} shrink-0 mt-0.5`.trim()} />
                       <span className="text-slate-300 leading-snug">{spec}</span>
                     </div>
                   ))}
@@ -544,7 +543,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-500 uppercase font-mono">Monthly Retainer</span>
-                  <span className="font-extrabold text-indigo-400 font-sans">{p.monthlyRange}</span>
+                  <span className={`font-extrabold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-sans`.trim()}>{p.monthlyRange}</span>
                 </div>
                 <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-900 text-[10.5px] text-slate-405 leading-snug">
                   <strong className="text-slate-200">Outcome:</strong> {p.outcome}
@@ -556,15 +555,15 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
       </div>
 
       {/* Segment 4: Proposal Workspace & Custom Quote Generator */}
-      <div className="bg-slate-950/40 border border-indigo-950/60 rounded-3xl p-6 relative">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-505/5 blur-3xl rounded-full pointer-events-none" />
+      <div className="bg-slate-950/40 border border-red-950/60 rounded-3xl p-6 relative">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-red-505/5 blur-3xl rounded-full pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row gap-8">
           
           {/* Custom adjustments Left Panel */}
           <div className="lg:w-1/3 space-y-5 shrink-0">
             <div>
-              <span className="text-[10px] bg-slate-900 border border-slate-850 text-indigo-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+              <span className={`text-[10px] bg-slate-900 border border-slate-850 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold px-2 py-0.5 rounded uppercase tracking-wider font-mono`.trim()}>
                 Proposal Tailoring Suite
               </span>
               <h3 className="text-lg font-sans font-extrabold mt-1 text-slate-100">
@@ -583,7 +582,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                 value={customClientName}
                 onChange={(e) => setCustomClientName(e.target.value)}
                 placeholder="e.g., David / Kitchen Lab"
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500"
               />
             </div>
 
@@ -612,7 +611,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                       checked={includedAddons.includes(p.id)}
                       disabled={p.id === 'bos'} // Core cannot be deleted
                       onChange={() => handleToggleAddon(p.id)}
-                      className="rounded border-slate-800 text-indigo-600 bg-slate-900 focus:ring-indigo-500"
+                      className="rounded border-slate-800 text-emerald-600 bg-slate-900 focus:ring-slate-500"
                     />
                     <span className={p.id === 'bos' ? 'text-slate-500 font-semibold' : 'text-slate-300'}>
                       {p.name}
@@ -627,7 +626,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-450 font-semibold uppercase font-mono">Bespoke Setup Adjustment</span>
-                  <span className="text-indigo-400 font-bold">-{formatRand(setupDiscount)}</span>
+                  <span className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold`.trim()}>-{formatRand(setupDiscount)}</span>
                 </div>
                 <input
                   type="range"
@@ -636,14 +635,14 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                   step="1000"
                   value={setupDiscount}
                   onChange={(e) => setSetupDiscount(parseInt(e.target.value))}
-                  className="w-full accent-indigo-500"
+                  className="w-full accent-red-500"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-450 font-semibold uppercase font-mono">Retainer Adjustment (Monthly)</span>
-                  <span className="text-indigo-400 font-bold">-{formatRand(monthlyDiscount)}</span>
+                  <span className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold`.trim()}>-{formatRand(monthlyDiscount)}</span>
                 </div>
                 <input
                   type="range"
@@ -652,7 +651,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                   step="100"
                   value={monthlyDiscount}
                   onChange={(e) => setMonthlyDiscount(parseInt(e.target.value))}
-                  className="w-full accent-indigo-500"
+                  className="w-full accent-red-500"
                 />
               </div>
             </div>
@@ -665,7 +664,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
               </div>
               <div className="text-right">
                 <span className="text-[10px] text-slate-500 uppercase font-mono">Monthly Retainer</span>
-                <div className="text-md sm:text-lg font-bold font-sans text-indigo-400">{formatRand(fees.netMonthly)}</div>
+                <div className={`text-md sm:text-lg font-bold font-sans ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>{formatRand(fees.netMonthly)}</div>
               </div>
             </div>
 
@@ -674,7 +673,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
           {/* Generated Text Right Panel */}
           <div className="flex-1 space-y-4">
             <div className="flex justify-between items-center bg-[#111625] px-4 py-2 rounded-xl border border-slate-850">
-              <div className="flex items-center gap-1.5 text-xs text-indigo-400 font-bold font-sans">
+              <div className={`flex items-center gap-1.5 text-xs ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold font-sans`.trim()}>
                 <Sliders className="h-3.5 w-3.5" />
                 <span>Generated Non-Jargony SME Proposal Draft</span>
               </div>
@@ -684,7 +683,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
                 className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg select-none cursor-pointer transition-colors ${
                   copiedProposal
                     ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40'
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                    : 'bg-slate-800 hover:bg-slate-705 text-white'
                 }`}
               >
                 <Copy className="h-3 w-3" />
@@ -699,7 +698,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
             </div>
 
             <div className="text-xs text-slate-500 italic flex items-start gap-1.5 leading-snug">
-              <HelpCircle className="h-4 w-4 shrink-0 text-indigo-400 mt-0.5" />
+              <HelpCircle className={`h-4 w-4 shrink-0 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} mt-0.5`.trim()} />
               <span>
                 Tip: Copy and message this formatted, humble proposal right into David’s consultation or WhatsApp chat. It completely bypasses CRM/ERP enterprise barriers and addresses South Africa SME realities.
               </span>
@@ -716,14 +715,14 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
         {/* Left column: Maintenance tools */}
         <div className="space-y-4">
           <div className="p-1">
-            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono">Workspace Maintenance</h3>
+            <h3 className={`text-sm font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest font-mono`.trim()}>Workspace Maintenance</h3>
             <p className="text-xs text-slate-400 mt-1">Manage active workspace status, or flush local caches for pristine operations.</p>
           </div>
 
           <div className="bg-[#111625] border border-slate-800/80 rounded-2xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800/40 pb-3">
               <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-indigo-400" />
+                <Database className={`h-4 w-4 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()} />
                 <span className="text-xs font-bold text-slate-200">Local Database Engine</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -790,7 +789,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
         {/* Right Columns: Interactive App User Guide */}
         <div className="lg:col-span-2 space-y-4">
           <div className="p-1">
-            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono flex items-center gap-1.5">
+            <h3 className={`text-sm font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest font-mono flex items-center gap-1.5`.trim()}>
               <BookOpen className="h-4 w-4" />
               Kitchen Lab OS • Developer & User Manual
             </h3>
@@ -803,20 +802,20 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
             
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-950/60 border border-indigo-900/40 rounded-lg text-indigo-400">
+                <div className={`p-1.5 bg-slate-900/60 border border-slate-800 rounded-lg ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>
                   <Smartphone className="h-4.5 w-4.5" />
                 </div>
                 <h4 className="text-xs font-bold text-slate-200 uppercase font-mono">Mobile App Setup & Shortcut</h4>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed font-sans">
                 You do not need an App Store or Play Store account to source or load this software on client sites. 
-                Simply open the <strong className="text-slate-250">Shared URL</strong> on your iPhone Safari or Android Chrome browser, tap <strong className="text-indigo-400">"Add to Home Screen"</strong> (or "Install"), and it will pin a full-screen standalone application shortcut directly onto your home screen menu.
+                Simply open the <strong className="text-slate-250">Shared URL</strong> on your iPhone Safari or Android Chrome browser, tap <strong className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>"Add to Home Screen"</strong> (or "Install"), and it will pin a full-screen standalone application shortcut directly onto your home screen menu.
               </p>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-950/60 border border-indigo-900/40 rounded-lg text-indigo-400">
+                <div className={`p-1.5 bg-slate-900/60 border border-slate-800 rounded-lg ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>
                   <WifiOff className="h-4.5 w-4.5" />
                 </div>
                 <h4 className="text-xs font-bold text-slate-200 uppercase font-mono font-mono">Offline-First Design Engine</h4>
@@ -824,13 +823,13 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
               <p className="text-xs text-slate-400 leading-relaxed font-sans">
                 <strong className="text-emerald-400">Absolute Offline:</strong> All client entries, door profiles, hinges configurations, photos, and financial ledger logs are cached immediately in the device browser storage. David will never lose measurement cuts on rural South Africa farms with zero network.
                 <br />
-                <strong className="text-indigo-400">Online Sync:</strong> When cell signal restores, backing up or sending ERP Setup requests (Power BI Synced ledger audits, PDF report logs) activates transparently inside the network thread.
+                <strong className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>Online Sync:</strong> When cell signal restores, backing up or sending ERP Setup requests (Power BI Synced ledger audits, PDF report logs) activates transparently inside the network thread.
               </p>
             </div>
 
             <div className="space-y-3 pt-4 border-t border-slate-800/40">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-950/60 border border-indigo-900/40 rounded-lg text-indigo-400">
+                <div className={`p-1.5 bg-slate-900/60 border border-slate-800 rounded-lg ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>
                   <Sliders className="h-4.5 w-4.5" />
                 </div>
                 <h4 className="text-xs font-bold text-slate-200 uppercase font-mono">Hardware & Cabinet Specs</h4>
@@ -848,7 +847,7 @@ export default function LuminaryPortfolio({ onSeedDemoData, onResetCleanState, c
 
             <div className="space-y-3 pt-4 border-t border-slate-800/40">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-950/60 border border-indigo-900/40 rounded-lg text-indigo-400">
+                <div className={`p-1.5 bg-slate-900/60 border border-slate-800 rounded-lg ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>
                   <Layout className="h-4.5 w-4.5" />
                 </div>
                 <h4 className="text-xs font-bold text-slate-200 uppercase font-mono">Visual Layout Previews</h4>

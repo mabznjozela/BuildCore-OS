@@ -104,7 +104,7 @@ export default function NotesSection({ job, notes, onAddNote }: NotesSectionProp
       {/* Header */}
       <div className="border-b border-gray-100 pb-4 mb-5">
         <h2 className="text-xl font-sans font-bold text-gray-900 tracking-tight flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-indigo-600" />
+          <MessageSquare className="h-5 w-5 text-emerald-600" />
           Site Logs & Notes
         </h2>
         <p className="text-xs text-gray-500 mt-0.5">
@@ -128,7 +128,7 @@ export default function NotesSection({ job, notes, onAddNote }: NotesSectionProp
             >
               <div className="flex justify-between items-start gap-2 mb-2">
                 <div className="flex items-center gap-1.5 text-xs text-slate-800 font-bold font-sans">
-                  <User className="h-3 w-3 text-indigo-500" />
+                  <User className="h-3 w-3 text-slate-500" />
                   <span>{note.author}</span>
                 </div>
                 <div className="flex items-center gap-1 text-[9px] text-gray-400 font-mono">
@@ -170,7 +170,7 @@ export default function NotesSection({ job, notes, onAddNote }: NotesSectionProp
               onChange={(e) => setNewNote(e.target.value)}
               rows={2}
               placeholder="Type or click the microphone to dictate a comment..."
-              className="flex-1 w-full text-xs text-gray-950 bg-white border border-gray-300 rounded-lg pl-3 pr-10 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none resize-none transition-all"
+              className="flex-1 w-full text-xs text-gray-950 bg-white border border-gray-300 rounded-lg pl-3 pr-10 py-2.5 focus:border-slate-500 focus:ring-2 focus:ring-red-100 outline-none resize-none transition-all"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -203,7 +203,7 @@ export default function NotesSection({ job, notes, onAddNote }: NotesSectionProp
             id={`note-submit-btn-${job.id}`}
             type="submit"
             disabled={!newNote.trim()}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-semibold text-xs px-4 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all shrink-0 select-none active:scale-95"
+            className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white font-semibold text-xs px-4 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all shrink-0 select-none active:scale-95"
           >
             <Send className="h-4 w-4 mb-0.5" />
             <span>Send</span>

@@ -67,7 +67,7 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4 mb-6 gap-3">
         <div>
           <h2 className="text-xl font-sans font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <Image className="h-5 w-5 text-indigo-600" />
+            <Image className="h-5 w-5 text-emerald-600" />
             Visual Vault
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -77,7 +77,7 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
         <button
           id={`vault-toggle-add-btn-${job.id}`}
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+          className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           {showAddForm ? 'Cancel Upload' : 'Upload Document/Photo'}
@@ -102,11 +102,11 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
                   key={idx}
                   onClick={() => handlePresetSelect(idx)}
                   className={`bg-white border rounded-lg p-2 cursor-pointer transition-all hover:scale-102 flex flex-col justify-between h-16 ${
-                    selectedPresetIndex === idx ? 'border-indigo-600 ring-2 ring-indigo-500/15 bg-indigo-50/10' : 'border-gray-200'
+                    selectedPresetIndex === idx ? 'border-red-600 ring-2 ring-slate-500/15 bg-red-50/10' : 'border-gray-200'
                   }`}
                 >
                   <span className="text-[10px] font-semibold text-gray-800 line-clamp-1">{preset.name}</span>
-                  <span className="text-[9px] uppercase font-bold text-indigo-500">{preset.type}</span>
+                  <span className="text-[9px] uppercase font-bold text-slate-500">{preset.type}</span>
                 </div>
               ))}
             </div>
@@ -125,7 +125,7 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
                 }}
                 required
                 placeholder="e.g. Approved_Elevation_Render.jpg"
-                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500 text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-slate-500 text-gray-950 font-sans"
               />
             </div>
 
@@ -138,7 +138,7 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
                   setNewFileType(e.target.value as any);
                   setSelectedPresetIndex(null);
                 }}
-                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500 text-gray-950 cursor-pointer font-sans"
+                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-slate-500 text-gray-950 cursor-pointer font-sans"
               >
                 <option value="photo">📷 Site Photo</option>
                 <option value="render">🎨 3D Design Render</option>
@@ -157,7 +157,7 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
                   setSelectedPresetIndex(null);
                 }}
                 placeholder="Leave blank for automatic placeholder image"
-                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500 text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 bg-white rounded-lg px-2.5 py-1.5 outline-none focus:border-slate-500 text-gray-950 font-sans"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
             <button
               id={`vault-submit-btn-${job.id}`}
               type="submit"
-              className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg cursor-pointer"
+              className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg cursor-pointer"
             >
               <Upload className="h-3.5 w-3.5" />
               Attach to {job.id} Vault
@@ -222,15 +222,15 @@ export default function VisualVault({ job, files, onAddFile, onDeleteFile }: Vis
             <div
               key={file.id}
               id={`vault-file-card-${file.id}`}
-              className="group border border-gray-200/90 hover:border-indigo-400/50 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all bg-white relative flex flex-col justify-between"
+              className="group border border-gray-200/90 isSleekTheme ? 'hover:border-slate-600' : 'hover:border-slate-400'/50 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all bg-white relative flex flex-col justify-between"
             >
               <div>
                 {/* Thumbnail Header */}
                 <div className="h-40 bg-gray-100 flex items-center justify-center relative overflow-hidden group border-b border-gray-100">
                   {file.type === 'document' || file.url === '#' ? (
-                    <div className="bg-gradient-to-br from-gray-50 to-indigo-50/30 w-full h-full flex flex-col items-center justify-center p-3 text-center">
-                      <FileText className="h-10 w-10 text-indigo-400 mb-2 group-hover:scale-110 transition-transform" />
-                      <span className="text-[11px] font-semibold text-indigo-900 uppercase">PDF Document</span>
+                    <div className="bg-gradient-to-br from-gray-50 to-red-50/30 w-full h-full flex flex-col items-center justify-center p-3 text-center">
+                      <FileText className="h-10 w-10 isSleekTheme ? 'text-slate-300' : 'text-slate-700' mb-2 group-hover:scale-110 transition-transform" />
+                      <span className="text-[11px] font-semibold text-slate-900 uppercase">PDF Document</span>
                     </div>
                   ) : (
                     <img

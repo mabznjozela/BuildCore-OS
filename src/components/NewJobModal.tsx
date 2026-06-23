@@ -79,7 +79,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
         <div className="flex items-center justify-between border-b border-gray-150 p-5 sticky top-0 bg-white z-10 font-sans">
           <div>
             <h2 className="text-lg font-sans font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
-              <PlusCircle className="h-4.5 w-4.5 text-indigo-600" />
+              <PlusCircle className="h-4.5 w-4.5 text-emerald-600" />
               Add New Project Passport
             </h2>
             <p className="text-xs text-slate-500">Create a master workflow job tracker. Defaults automatically populate initial checklist tasks.</p>
@@ -98,7 +98,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
           
           {/* Section 1: Client details */}
           <div className="space-y-3 font-sans">
-            <h3 className="text-xs font-sans font-extrabold uppercase tracking-widest text-indigo-700 mb-1">
+            <h3 className="text-xs font-sans font-extrabold uppercase tracking-widest text-red-700 mb-1">
               1. Master Client Passport Details
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -111,7 +111,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   placeholder="e.g. Pinecrest Scullery, Driftwood Townhouse"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-red-600 outline-none"
                 />
               </div>
               <div>
@@ -123,7 +123,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   placeholder="e.g. Eldoraigne, Montana, Irene, Sandton"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-red-600 outline-none"
                 />
               </div>
               <div>
@@ -134,7 +134,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="e.g. 27833465449"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-red-600 outline-none"
                 />
               </div>
               <div>
@@ -145,7 +145,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. client@example.co.za"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-red-600 outline-none"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -157,7 +157,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="e.g. Eldoraigne, Centurion, 0157, South Africa"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-red-600 outline-none"
                 />
               </div>
             </div>
@@ -165,7 +165,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
 
           {/* Section 2: Gateways, Valuation, Health */}
           <div className="space-y-3 pt-4 border-t border-gray-100 font-sans">
-            <h3 className="text-xs font-sans font-extrabold uppercase tracking-widest text-indigo-700 mb-1">
+            <h3 className="text-xs font-sans font-extrabold uppercase tracking-widest text-red-700 mb-1">
               2. Initial Phase & Valuation
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -175,7 +175,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   id="new-job-status"
                   value={status}
                   onChange={(e) => setStatus(e.target.value as any)}
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-indigo-600 cursor-pointer"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-red-600 cursor-pointer"
                 >
                   <option value="1 First Contact">1 First Contact</option>
                   <option value="2 Qualifying Lead">2 Qualifying Lead</option>
@@ -199,7 +199,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={quoteValue}
                   onChange={(e) => setQuoteValue(e.target.value)}
                   placeholder="45000"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-indigo-600"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-red-600"
                 />
               </div>
 
@@ -211,7 +211,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={depositReceived}
                   onChange={(e) => setDepositReceived(e.target.value)}
                   placeholder="0"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-indigo-600"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-red-600"
                 />
               </div>
             </div>
@@ -225,7 +225,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   value={leadSource}
                   onChange={(e) => setLeadSource(e.target.value)}
                   placeholder="e.g. Repeat Client, Instagram referral"
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-indigo-600 outline-none"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-red-600 outline-none"
                 />
               </div>
               <div>
@@ -234,7 +234,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   id="new-job-health"
                   value={health}
                   onChange={(e) => setHealth(e.target.value as any)}
-                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-indigo-600 cursor-pointer"
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 outline-none focus:border-red-600 cursor-pointer"
                 >
                   <option value="On Track">On Track (Healthy)</option>
                   <option value="Needs Attention">Needs Attention (Amber)</option>
@@ -246,7 +246,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
 
           {/* Section 3: Bespoke specifications (Initial drafts) */}
           <div className="space-y-3 pt-4 border-t border-gray-100">
-            <h3 className="text-xs font-sans font-extrabold uppercase tracking-widest text-indigo-700 mb-1">
+            <h3 className="text-xs font-sans font-extrabold uppercase tracking-widest text-red-700 mb-1">
               3. Initial Carcass & Stone Specs
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -310,7 +310,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
             <button
               id="new-job-submit-btn"
               type="submit"
-              className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
+              className="text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
             >
               Add Job & Populate Tasks
             </button>

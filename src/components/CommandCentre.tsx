@@ -83,7 +83,7 @@ export default function CommandCentre({
       {/* Main Command Header Panel */}
       <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
         {/* Decorative Grid Light overlay */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-red-500/10 via-transparent to-transparent pointer-events-none" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
           
@@ -91,7 +91,7 @@ export default function CommandCentre({
             /* Editing State Form */
             <div className="lg:col-span-12 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="text-xs font-bold tracking-wider text-indigo-400 uppercase">
+                <h3 className="text-xs font-bold tracking-wider isSleekTheme ? 'text-slate-300' : 'text-slate-700' uppercase">
                   ✏️ Edit Client & Project Details
                 </h3>
                 <div className="flex gap-2">
@@ -104,7 +104,7 @@ export default function CommandCentre({
                   <button
                     id="save-client-info-btn"
                     onClick={handleSave}
-                    className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-indigo-950/40"
+                    className="text-xs bg-slate-800 hover:bg-slate-705 text-white px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-black/20"
                   >
                     <Save className="h-3.5 w-3.5" /> Save Details
                   </button>
@@ -121,7 +121,7 @@ export default function CommandCentre({
                     type="text"
                     value={editFields.clientName}
                     onChange={(e) => setEditFields({ ...editFields, clientName: e.target.value })}
-                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   />
                 </div>
 
@@ -134,7 +134,7 @@ export default function CommandCentre({
                     type="text"
                     value={editFields.phone}
                     onChange={(e) => setEditFields({ ...editFields, phone: e.target.value })}
-                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   />
                 </div>
 
@@ -147,7 +147,7 @@ export default function CommandCentre({
                     type="email"
                     value={editFields.email}
                     onChange={(e) => setEditFields({ ...editFields, email: e.target.value })}
-                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   />
                 </div>
 
@@ -160,7 +160,7 @@ export default function CommandCentre({
                     type="text"
                     value={editFields.address}
                     onChange={(e) => setEditFields({ ...editFields, address: e.target.value })}
-                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   />
                 </div>
 
@@ -173,7 +173,7 @@ export default function CommandCentre({
                     type="text"
                     value={editFields.area}
                     onChange={(e) => setEditFields({ ...editFields, area: e.target.value })}
-                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400"
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   />
                 </div>
 
@@ -186,7 +186,7 @@ export default function CommandCentre({
                     value={editFields.comments}
                     onChange={(e) => setEditFields({ ...editFields, comments: e.target.value })}
                     rows={2}
-                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400 resize-none"
+                    className="w-full bg-slate-850 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400 resize-none"
                   />
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function CommandCentre({
                       ❤️ Health: {job.health}
                     </span>
                     {/* Date Created Pill */}
-                    <span className="text-[9px] font-sans font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/25 flex items-center gap-1">
+                    <span className="text-[9px] font-sans font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-red-500/10 text-slate-350 border border-red-500/25 flex items-center gap-1">
                       📅 Created: {job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : (job.statusSince ? new Date(job.statusSince).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '17 Jun 2026')}
                     </span>
                     <span className="text-xs text-slate-400 font-medium font-sans">
@@ -215,7 +215,7 @@ export default function CommandCentre({
                     <button
                       id="edit-client-info-trigger-btn"
                       onClick={startEditing}
-                      className="ml-auto flex items-center gap-1 text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-indigo-550 text-slate-300 hover:text-white px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer select-none"
+                      className="ml-auto flex items-center gap-1 text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 isSleekTheme ? 'hover:border-slate-600' : 'hover:border-slate-400' text-slate-300 hover:text-white px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer select-none"
                     >
                       ✏️ Edit Info
                     </button>
@@ -236,7 +236,7 @@ export default function CommandCentre({
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-slate-500 shrink-0" />
-                    <span className="font-semibold text-indigo-300">{job.phone}</span>
+                    <span className="font-semibold text-slate-350">{job.phone}</span>
                   </div>
                   <div className="flex items-center gap-2 sm:col-span-2">
                     <Mail className="h-4 w-4 text-slate-500 shrink-0" />
@@ -285,13 +285,13 @@ export default function CommandCentre({
                   type="text"
                   value={nextAction}
                   onChange={(e) => setNextAction(e.target.value)}
-                  className="flex-1 text-xs bg-slate-850 border border-slate-700/60 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-indigo-400"
+                  className="flex-1 text-xs bg-slate-850 border border-slate-700/60 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-red-400"
                   placeholder="Set next chore point..."
                 />
                 <button
                   id="save-next-action-btn"
                   onClick={handleNextActionSave}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors shrink-0"
+                  className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors shrink-0"
                 >
                   Set
                 </button>
@@ -306,7 +306,7 @@ export default function CommandCentre({
                   {outstandingTasksCount} Action{outstandingTasksCount === 1 ? '' : 's'} Remaining
                 </span>
               </div>
-              <div className="h-9 w-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-xs text-indigo-400">
+              <div className="h-9 w-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-xs isSleekTheme ? 'text-slate-300' : 'text-slate-700'">
                 {outstandingTasksCount}
               </div>
             </div>
@@ -331,7 +331,7 @@ export default function CommandCentre({
               onClick={() => onSelectSection(tab.key)}
               className={`text-xs px-3.5 py-2.2 rounded-xl font-sans font-bold transition-all whitespace-nowrap cursor-pointer select-none ${
                 activeSection === tab.key
-                  ? 'bg-white text-slate-950 shadow-md ring-2 ring-indigo-500/10'
+                  ? 'bg-white text-slate-950 shadow-md ring-2 ring-slate-500/10'
                   : 'bg-slate-850 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800/80'
               }`}
             >

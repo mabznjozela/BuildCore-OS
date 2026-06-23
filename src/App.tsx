@@ -42,7 +42,8 @@ import {
   ArrowRight,
   Sparkles,
   Clock,
-  ClipboardList
+  ClipboardList,
+  FolderOpen
 } from 'lucide-react';
 
 const isDemoRecord = (data: any): boolean => {
@@ -77,6 +78,51 @@ const isDemoJobId = (jobId: string): boolean => {
     }
   }
   return false;
+};
+
+const getStatusBadgeStyles = (status: string, isSleekTheme: boolean) => {
+  const norm = status ? status.toLowerCase() : '';
+  if (norm.includes('1 ') || norm.includes('2 ') || norm.includes('3 ') || norm.includes('4 ') || norm.includes('contact') || norm.includes('lead')) {
+    // Lead Care (1 - 4) -> Blue
+    return isSleekTheme 
+      ? 'bg-blue-950/60 text-blue-300 border border-blue-900/40' 
+      : 'bg-blue-50 text-blue-800 border border-blue-200';
+  } else if (norm.includes('5 ') || norm.includes('6 ') || norm.includes('design') || norm.includes('quote')) {
+    // Design (5 - 6) -> Rose (reddish-pink)
+    return isSleekTheme 
+      ? 'bg-rose-950/60 text-rose-300 border border-rose-900/40 font-semibold' 
+      : 'bg-rose-50 text-rose-800 border border-rose-200 font-semibold';
+  } else if (norm.includes('7 ') || norm.includes('awaiting deposit')) {
+    // Awaiting Deposit (7) -> Amber/Orange
+    return isSleekTheme 
+      ? 'bg-amber-950/60 text-amber-300 border border-amber-900/40' 
+      : 'bg-amber-50 text-amber-800 border border-amber-200';
+  } else if (norm.includes('8 ') || norm.includes('deposit paid')) {
+    // Deposit Paid (8) -> Teal
+    return isSleekTheme 
+      ? 'bg-teal-950/60 text-teal-300 border border-teal-900/40' 
+      : 'bg-teal-50 text-teal-800 border border-teal-200';
+  } else if (norm.includes('9 ') || norm.includes('production')) {
+    // Production (9) -> Violet / Purple
+    return isSleekTheme 
+      ? 'bg-violet-950/60 text-violet-300 border border-violet-900/40' 
+      : 'bg-violet-50 text-violet-800 border border-violet-200';
+  } else if (norm.includes('10 ') || norm.includes('11 ') || norm.includes('installation')) {
+    // Installation (10 - 11) -> Cyan / Sky
+    return isSleekTheme 
+      ? 'bg-cyan-950/60 text-cyan-300 border border-cyan-900/40' 
+      : 'bg-cyan-50 text-cyan-800 border border-cyan-200';
+  } else if (norm.includes('12 ') || norm.includes('complete')) {
+    // Complete (12) -> Emerald
+    return isSleekTheme 
+      ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-900/40' 
+      : 'bg-emerald-50 text-emerald-800 border border-emerald-250';
+  } else {
+    // Default
+    return isSleekTheme 
+      ? 'bg-slate-900 text-slate-300 border border-slate-800' 
+      : 'bg-slate-50 text-slate-700 border border-slate-200';
+  }
 };
 
 export default function App() {
@@ -126,7 +172,7 @@ export default function App() {
   });
   const [isSyncingLocal, setIsSyncingLocal] = useState<boolean>(false);
   const [isFloorProjectsExpanded, setIsFloorProjectsExpanded] = useState<boolean>(true);
-  const [isFloorTasksExpanded, setIsFloorTasksExpanded] = useState<boolean>(true);
+  const [isFloorTasksExpanded, setIsFloorTasksExpanded] = useState<boolean>(false);
 
   // --- Acting User for Audit Logs ---
   const [currentUser, setCurrentUser] = useState<string>(() => {
@@ -759,8 +805,8 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#070b13] flex flex-col items-center justify-center p-4 font-sans select-none relative overflow-hidden">
         {/* Modern abstract cosmic ambient glows */}
-        <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-red-600/5 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-slate-800/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-slate-800/5 blur-[120px] pointer-events-none" />
         
         {/* Branded Card mirroring the uploaded Kitchen Lab logo and business layout */}
         <motion.div 
@@ -813,7 +859,7 @@ export default function App() {
                       if (passwordError) setPasswordError(null);
                     }}
                     placeholder="••••••••"
-                    className="w-full bg-slate-50 text-slate-950 px-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-red-650 focus:outline-none font-mono text-center text-sm tracking-[0.3em] font-extrabold shadow-inner transition-all duration-200"
+                    className="w-full bg-slate-50 text-slate-950 px-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-red-600 focus:outline-none font-mono text-center text-sm tracking-[0.3em] font-extrabold shadow-inner transition-all duration-200"
                     autoFocus
                   />
                 </div>
@@ -821,7 +867,7 @@ export default function App() {
                   <motion.p 
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-[11px] text-red-650 font-semibold mt-2 text-center"
+                    className="text-[11px] text-emerald-600 font-semibold mt-2 text-center"
                   >
                     ⚠️ {passwordError}
                   </motion.p>
@@ -861,8 +907,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between font-sans">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center font-extrabold text-lg select-none shadow-md shadow-white/5 border border-slate-200">
-              <span className="text-red-600 font-extrabold">K</span>
-              <span className="text-slate-950 font-extrabold font-sans">L</span>
+              <span className="text-[#dc2626] font-extrabold">K</span>
+              <span className="text-black font-extrabold font-sans">L</span>
             </div>
             <div>
               <h1 className="text-md sm:text-lg font-sans font-extrabold tracking-tight text-white flex items-center gap-1.5">
@@ -877,7 +923,7 @@ export default function App() {
               onClick={() => setIsSleekTheme(!isSleekTheme)}
               className={`text-xs px-2.5 py-1.5 sm:py-2 rounded-xl flex items-center justify-center font-bold transition-all cursor-pointer border ${
                 isSleekTheme
-                  ? 'bg-indigo-950/40 text-indigo-300 border-indigo-700/40 hover:bg-indigo-950/80'
+                  ? 'bg-slate-900/40 text-slate-350 border-red-700/40 hover:bg-slate-900/80'
                   : 'bg-slate-800 text-slate-200 border-transparent hover:bg-slate-700'
               }`}
               title="Switch theme"
@@ -887,7 +933,7 @@ export default function App() {
             <button
               id="top-add-job-btn"
               onClick={() => setShowAddJobModal(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-xs font-bold text-white px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 cursor-pointer select-none font-sans"
+              className="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-xs font-bold text-white px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 cursor-pointer select-none font-sans"
             >
               <PlusCircle className="h-4 w-4" />
               New Project
@@ -895,7 +941,7 @@ export default function App() {
             <button
               id="lock-dashboard-btn"
               onClick={handleLogout}
-              className="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-red-500/30 px-3 py-1.5 sm:py-2 rounded-xl text-slate-300 hover:text-red-400 font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              className={`text-xs bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700/60 px-3 py-1.5 sm:py-2 rounded-xl text-slate-300 hover: ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold transition-all cursor-pointer flex items-center gap-1.5`.trim()}
               title="Click to lock the console instantly"
             >
               🔒 Lock Console
@@ -919,14 +965,14 @@ export default function App() {
               </span>
 
               {/* Audit Log Badge */}
-              <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-900/40 text-slate-350 border border-slate-800 flex items-center gap-1.5 shrink-0">
                 <span>🕒 LAST EDITED BY:</span>
                 <span className="text-[#f1f5f9] tracking-tight truncate max-w-[120px] font-sans font-bold">{lastAudit?.lastEditedBy || 'David'}</span>
-                <span className="text-indigo-400/80 font-normal">
+                <span className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} /80 font-normal`.trim()}>
                   ({lastAudit?.timestamp ? new Date(lastAudit.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Initial Sync'})
                 </span>
                 {lastAudit?.action && (
-                  <span className="text-[9px] text-indigo-400 font-normal border-l border-indigo-800/40 pl-1.5 max-w-[200px] truncate hidden md:inline">
+                  <span className={`text-[9px] ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-normal border-l border-red-800/40 pl-1.5 max-w-[200px] truncate hidden md:inline`.trim()}>
                     {lastAudit.action}
                   </span>
                 )}
@@ -938,7 +984,7 @@ export default function App() {
                 <select
                   value={currentUser}
                   onChange={(e) => setCurrentUser(e.target.value)}
-                  className="bg-transparent text-indigo-300 font-bold border-none outline-none focus:ring-0 cursor-pointer text-[10px] py-0 pl-1 pr-1.5 select-none font-mono"
+                  className="bg-transparent text-slate-350 font-bold border-none outline-none focus:ring-0 cursor-pointer text-[10px] py-0 pl-1 pr-1.5 select-none font-mono"
                 >
                   <option value="David" className="bg-slate-900 text-white">David</option>
                   <option value="Admin" className="bg-slate-900 text-white">Admin (mabza1n)</option>
@@ -953,8 +999,8 @@ export default function App() {
                 onClick={() => setShowUserGuide(!showUserGuide)}
                 className={`text-xs px-4 py-1.5 rounded-xl font-bold flex items-center gap-1.5 select-none cursor-pointer transition-all border ${
                   showUserGuide
-                    ? 'bg-slate-850 text-indigo-400 border-indigo-500/30'
-                    : 'bg-indigo-950/30 text-indigo-300 border-indigo-900/40 hover:bg-indigo-950/60'
+                    ? (isSleekTheme ? 'bg-slate-850 text-slate-300 border-slate-700/60' : 'bg-slate-100 text-slate-705 border-slate-300')
+                    : 'bg-slate-900/30 text-slate-350 border-slate-800 hover:bg-slate-900/60'
                 }`}
               >
                 <BookOpen className="h-4 w-4" />
@@ -979,7 +1025,7 @@ export default function App() {
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
                 <div className="flex items-start justify-between border-b border-slate-800/40 pb-3 mb-4">
                   <div>
-                    <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                    <h2 className={`text-sm font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest font-mono flex items-center gap-2`.trim()}>
                       <BookOpen className="h-4.5 w-4.5" />
                       Kitchen Lab OS • Operational Handbook
                     </h2>
@@ -999,7 +1045,7 @@ export default function App() {
                   
                   {/* Manual Section 1 */}
                   <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
-                    <div className="flex items-center gap-2 text-indigo-400">
+                    <div className={`flex items-center gap-2 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>
                       <Smartphone className="h-4.5 w-4.5" />
                       <h3 className="text-xs font-bold uppercase font-sans tracking-wide">1. Loading onto your Phone</h3>
                     </div>
@@ -1008,9 +1054,9 @@ export default function App() {
                       <br />
                       1. Tap the <strong className="text-slate-350">Share App URL</strong> option inside AI Studio, or open the link on your phone.
                       <br />
-                      2. In Chrome (Android) or Safari (iPhone), tap the <strong className="text-indigo-400 font-extrabold">"Share" / "Menu"</strong> button.
+                      2. In Chrome (Android) or Safari (iPhone), tap the <strong className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-extrabold`.trim()}>"Share" / "Menu"</strong> button.
                       <br />
-                      3. Choose <strong className="text-indigo-400 font-extrabold">"Add to Home Screen"</strong>.
+                      3. Choose <strong className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-extrabold`.trim()}>"Add to Home Screen"</strong>.
                       <br />
                       It places a standalone workspace launcher shortcut immediately onto your phone's home screen.
                     </p>
@@ -1018,7 +1064,7 @@ export default function App() {
 
                   {/* Manual Section 2 */}
                   <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
-                    <div className="flex items-center gap-2 text-indigo-400">
+                    <div className={`flex items-center gap-2 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>
                       <WifiOff className="h-4.5 w-4.5" />
                       <h3 className="text-xs font-bold uppercase font-sans tracking-wide">2. Offline vs. Online Capabilities</h3>
                     </div>
@@ -1031,7 +1077,7 @@ export default function App() {
 
                   {/* Manual Section 3 */}
                   <div className={`p-4 rounded-2xl border ${isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-white border-slate-200'} space-y-2`}>
-                    <div className="flex items-center gap-2 text-indigo-400">
+                    <div className={`flex items-center gap-2 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>
                       <Sliders className="h-4.5 w-4.5" />
                       <h3 className="text-xs font-bold uppercase font-sans tracking-wide">3. Core Features to Showcase</h3>
                     </div>
@@ -1061,15 +1107,15 @@ export default function App() {
               initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="mb-5 bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/25 text-white rounded-xl p-4 shadow-xl flex items-start gap-3 relative overflow-hidden"
+              className="mb-5 bg-gradient-to-r from-slate-900 to-red-950 border border-red-500/25 text-white rounded-xl p-4 shadow-xl flex items-start gap-3 relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 blur-xl rounded-full" />
-              <div className="h-6 w-6 rounded-full bg-indigo-500/25 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 blur-xl rounded-full" />
+              <div className="h-6 w-6 rounded-full bg-red-500/25 flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-xs">⚡</span>
               </div>
               <div>
-                <span className="font-extrabold text-sm block tracking-tight text-indigo-300">SYSTEM EVENT REGISTERED</span>
-                <span className="text-xs text-indigo-100 font-sans">{automationAlert}</span>
+                <span className="font-extrabold text-sm block tracking-tight text-slate-350">SYSTEM EVENT REGISTERED</span>
+                <span className="text-xs text-slate-200 font-sans">{automationAlert}</span>
               </div>
             </motion.div>
           )}
@@ -1089,44 +1135,44 @@ export default function App() {
             >
               {userRole === 'floor' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
-                  {/* BENTO CARD 1: ACTIVE PROJECTS CLIENT CARDS */}
+                  {/* BENTO CARD 1: ACTIVE CLIENTS */}
                   <div className={`p-6 rounded-3xl border flex flex-col justify-between transition-all duration-300 ${
-                    isFloorProjectsExpanded ? 'min-h-[500px]' : 'min-h-0'
-                  } ${
                     isSleekTheme ? 'bg-[#111625] border-slate-800/80 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-850 shadow-sm'
                   }`}>
                     <div>
                       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
-                            <PlusCircle className="h-5 w-5" />
-                          </span>
-                          <div>
-                            <h2 className="text-sm font-black uppercase tracking-widest text-slate-450">Active Projects</h2>
-                            <p className="text-xs text-slate-500">Cabinets & Millwork In-Progress</p>
+                        <button
+                          id="toggle-floor-projects-btn"
+                          onClick={() => setIsFloorProjectsExpanded(!isFloorProjectsExpanded)}
+                          className={`flex items-center gap-3 text-left cursor-pointer p-2 px-3 rounded-xl transition-all w-fit focus:outline-none focus:ring-0 border border-[#dc2626] ${
+                            isSleekTheme ? 'hover:bg-slate-800/30' : 'hover:bg-slate-100/60'
+                          }`}
+                          title={isFloorProjectsExpanded ? "Collapse Active Clients" : "Expand Active Clients"}
+                        >
+                          <div className="min-w-0">
+                            <h2 className={`text-sm font-black uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap ${
+                              isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'
+                            }`}>
+                              Active Clients
+                              {isFloorProjectsExpanded ? (
+                                <ChevronUp className="h-4 w-4 text-slate-500 shrink-0" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 text-slate-500 shrink-0" />
+                              )}
+                            </h2>
                           </div>
-                        </div>
+                        </button>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-bold bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full font-sans">
+                          <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full border border-[#dc2626] ${
+                            isSleekTheme ? 'bg-slate-800/50 text-slate-350' : 'bg-slate-100 text-slate-700 font-sans'
+                          }`}>
                             {activeJobs.length} Live
                           </span>
-                          <button
-                            id="toggle-floor-projects-btn"
-                            onClick={() => setIsFloorProjectsExpanded(!isFloorProjectsExpanded)}
-                            className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                            title={isFloorProjectsExpanded ? "Collapse Projects" : "Expand Projects"}
-                          >
-                            {isFloorProjectsExpanded ? (
-                              <ChevronUp className="h-5 w-5" />
-                            ) : (
-                              <ChevronDown className="h-5 w-5" />
-                            )}
-                          </button>
                         </div>
                       </div>
 
                       <AnimatePresence initial={false}>
-                        {isFloorProjectsExpanded ? (
+                        {isFloorProjectsExpanded && (
                           <motion.div
                             key="floor-projects-list"
                             initial={{ opacity: 0, height: 0 }}
@@ -1146,28 +1192,23 @@ export default function App() {
                                   }}
                                   className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer hover:scale-[1.015] active:scale-[0.985] flex flex-col justify-between ${
                                     isSleekTheme 
-                                      ? 'bg-[#151a2d]/50 border-slate-800 hover:border-indigo-500 text-slate-100' 
-                                      : 'bg-slate-50 border-slate-200 hover:border-indigo-400 text-slate-850'
+                                      ? 'bg-[#151a2d]/50 border-slate-800 hover:border-slate-600 text-slate-100' 
+                                      : 'bg-slate-50 border-slate-200 hover:border-slate-400 text-slate-855'
                                   }`}
                                 >
                                   <div className="flex justify-between items-start gap-2">
                                     <div className="min-w-0">
-                                      <h3 className="text-sm font-extrabold truncate text-white">{job.clientName}</h3>
+                                      <h3 className={`text-sm font-extrabold truncate ${isSleekTheme ? 'text-white' : 'text-slate-900'}`}>{job.clientName}</h3>
                                       <p className="text-xs text-slate-400 mt-0.5">📍 Area Suburb: <span className="font-semibold text-slate-350">{job.area}</span></p>
                                     </div>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border shrink-0 ${
-                                      job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border-indigo-900/30' :
-                                      job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border-rose-900/30' :
-                                      job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border-amber-900/40' :
-                                      'bg-slate-900 text-slate-300 border-slate-800'
-                                    }`}>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0 ${getStatusBadgeStyles(job.status, isSleekTheme)}`}>
                                       {job.status}
                                     </span>
                                   </div>
                                   
                                   <div className="flex items-center justify-between border-t border-slate-850 pt-2.5 mt-3 text-[11px]">
                                     <span className="text-slate-400">Task Completion:</span>
-                                    <span className={`font-bold font-mono ${outstanding === 0 ? 'text-emerald-400' : 'text-indigo-400'}`}>
+                                    <span className={`font-bold font-mono ${outstanding === 0 ? 'text-emerald-400' : (isSleekTheme ? 'text-slate-300' : 'text-slate-700')}`}>
                                       {outstanding === 0 ? 'All Complete ✓' : `${outstanding} Open Steps`}
                                     </span>
                                   </div>
@@ -1175,24 +1216,12 @@ export default function App() {
                               );
                             })}
                           </motion.div>
-                        ) : (
-                          <motion.div
-                            key="floor-projects-collapsed"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            onClick={() => setIsFloorProjectsExpanded(true)}
-                            className="py-12 px-2 border border-dashed border-slate-850 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/50 transition-all text-slate-400"
-                          >
-                            <span className="text-2xl mb-2">📁</span>
-                            <span className="text-xs font-mono font-bold text-slate-300">Click to expand projects list</span>
-                            <span className="text-[10px] font-mono text-slate-500 mt-1">{activeJobs.length} active clients cached offline</span>
-                          </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
                   </div>
 
-                  {/* BENTO CARD 2: OPEN TASKS CHECKLIST */}
+                  {/* BENTO CARD 2: OPEN TASKS CHECKLIST (ACTIVE CHECKLIST / TASKS BUTTON) */}
                   <div className={`p-6 rounded-3xl border flex flex-col justify-between transition-all duration-300 ${
                     isFloorTasksExpanded ? 'min-h-[500px]' : 'min-h-0'
                   } ${
@@ -1200,42 +1229,44 @@ export default function App() {
                   }`}>
                     <div>
                       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
-                            <ClipboardList className="h-5 w-5" />
-                          </span>
-                          <div>
-                            <h2 className="text-sm font-black uppercase tracking-widest text-slate-450">Active Checklist</h2>
-                            <p className="text-xs text-slate-500">Outstanding Workshop Tasks</p>
+                        <button
+                          id="toggle-floor-tasks-btn"
+                          onClick={() => setIsFloorTasksExpanded(!isFloorTasksExpanded)}
+                          className={`flex items-center gap-3 text-left cursor-pointer p-2 px-3 rounded-xl transition-all w-fit focus:outline-none focus:ring-0 border border-[#dc2626] ${
+                            isSleekTheme ? 'hover:bg-slate-800/30' : 'hover:bg-slate-100/60'
+                          }`}
+                          title={isFloorTasksExpanded ? "Collapse Checklist" : "Expand Checklist"}
+                        >
+                          <div className="min-w-0">
+                            <h2 className={`text-sm font-black uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap ${
+                              isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'
+                            }`}>
+                              Active Checklist
+                              {isFloorTasksExpanded ? (
+                                <ChevronUp className="h-4 w-4 text-slate-500 shrink-0" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 text-slate-500 shrink-0" />
+                              )}
+                            </h2>
                           </div>
-                        </div>
+                        </button>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-bold bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full">
+                          <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full border border-[#dc2626] ${
+                            isSleekTheme ? 'bg-slate-800/50 text-slate-350' : 'bg-slate-100 text-slate-705'
+                          }`}>
                             {tasks.filter(t => !t.complete && activeJobs.some(j => j.id === t.jobId)).length} Pending
                           </span>
-                          <button
-                            id="toggle-floor-tasks-btn"
-                            onClick={() => setIsFloorTasksExpanded(!isFloorTasksExpanded)}
-                            className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                            title={isFloorTasksExpanded ? "Collapse Tasks" : "Expand Tasks"}
-                          >
-                            {isFloorTasksExpanded ? (
-                              <ChevronUp className="h-5 w-5" />
-                            ) : (
-                              <ChevronDown className="h-5 w-5" />
-                            )}
-                          </button>
                         </div>
                       </div>
 
                       <AnimatePresence initial={false}>
-                        {isFloorTasksExpanded ? (
+                        {isFloorTasksExpanded && (
                           <motion.div
                             key="floor-tasks-list"
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="space-y-3 max-h-[460px] overflow-y-auto pr-1 font-sans"
+                            className="space-y-4 max-h-[460px] overflow-y-auto pr-1 font-sans"
                           >
                             {(() => {
                               const floorOpenTasks = tasks.filter(t => !t.complete && activeJobs.some(j => j.id === t.jobId));
@@ -1248,51 +1279,58 @@ export default function App() {
                                   </div>
                                 );
                               }
-                              return floorOpenTasks.map((task) => {
-                                const job = jobs.find(j => j.id === task.jobId);
-                                return (
-                                  <div
-                                    key={task.id}
-                                    id={`floor-task-card-${task.id}`}
-                                    onClick={() => handleToggleTask(task.id)}
-                                    className={`p-3.5 rounded-2xl border transition-all duration-155 cursor-pointer flex items-start gap-3 hover:bg-slate-905/30 ${
-                                      isSleekTheme
-                                        ? 'bg-[#151a2d]/50 border-slate-800 hover:border-indigo-500/60'
-                                        : 'bg-slate-50 border-slate-200 hover:border-indigo-400'
-                                    }`}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={false}
-                                      readOnly
-                                      className="mt-0.5 rounded border-slate-700 bg-slate-950 text-indigo-650 focus:ring-0 focus:ring-offset-0 shrink-0 h-4 w-4 cursor-pointer"
-                                    />
-                                    <div className="min-w-0 flex-1 font-sans">
-                                      <h4 className="text-xs font-extrabold text-slate-200 leading-snug group-hover:text-indigo-400 transition-colors">
-                                        {task.taskName}
-                                      </h4>
-                                      <p className="text-[10px] text-indigo-405 font-medium mt-0.5">
-                                        📂 {job?.clientName || 'Project'} • <span className="font-mono">{task.stage}</span>
-                                      </p>
-                                    </div>
-                                  </div>
-                                );
+
+                              // Group open tasks by active jobs
+                              const groupedOpenTasks: { [jobId: string]: { jobName: string; tasks: typeof floorOpenTasks } } = {};
+                              floorOpenTasks.forEach(t => {
+                                if (!groupedOpenTasks[t.jobId]) {
+                                  const job = activeJobs.find(j => j.id === t.jobId);
+                                  groupedOpenTasks[t.jobId] = {
+                                    jobName: job ? job.clientName : 'General Client',
+                                    tasks: []
+                                  };
+                                }
+                                groupedOpenTasks[t.jobId].tasks.push(t);
                               });
+
+                              return Object.entries(groupedOpenTasks).map(([jobId, group]) => (
+                                <div key={jobId} className="space-y-2 border-b border-slate-805/40 pb-4 last:border-0 last:pb-0">
+                                  <div className={`text-[10px] font-black uppercase tracking-wider ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-sans pl-1 flex items-center gap-1.5`.trim()}>
+                                    <span className="h-1.5 w-1.5 rounded-full bg-slate-800 animate-pulse" />
+                                    {group.jobName}
+                                  </div>
+                                  <div className="space-y-2">
+                                    {group.tasks.map((task) => (
+                                      <div
+                                        key={task.id}
+                                        id={`floor-task-card-${task.id}`}
+                                        onClick={() => handleToggleTask(task.id)}
+                                        className={`p-3.5 rounded-2xl border transition-all duration-155 cursor-pointer flex items-start gap-3 hover:bg-slate-905/30 ${
+                                          isSleekTheme
+                                            ? 'bg-[#151a2d]/50 border-slate-805 hover:border-slate-500/60'
+                                            : 'bg-slate-50 border-slate-200 hover:border-slate-500'
+                                        }`}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={false}
+                                          readOnly
+                                          className="mt-0.5 rounded border-slate-700 bg-slate-950 text-emerald-600 focus:ring-0 focus:ring-offset-0 shrink-0 h-4 w-4 cursor-pointer"
+                                        />
+                                        <div className="min-w-0 flex-1 font-sans">
+                                          <h4 className="text-xs font-extrabold text-slate-200 leading-snug group-hover:text-[#f1f5f9] dark:group-hover:text-[#f1f5f9] transition-colors">
+                                            {task.taskName}
+                                          </h4>
+                                          <p className={`text-[10px] ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-medium mt-0.5`.trim()}>
+                                            Phase stage: <span className="font-mono text-slate-400">{task.stage}</span>
+                                          </p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ));
                             })()}
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key="floor-tasks-collapsed"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            onClick={() => setIsFloorTasksExpanded(true)}
-                            className="py-12 px-2 border border-dashed border-slate-850 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/50 transition-all text-slate-400"
-                          >
-                            <span className="text-2xl mb-2">📋</span>
-                            <span className="text-xs font-mono font-bold text-slate-300">Click to expand tasks list</span>
-                            <span className="text-[10px] font-mono text-slate-550 mt-1">
-                              {tasks.filter(t => !t.complete && activeJobs.some(j => j.id === t.jobId)).length} pending tasks on the floor
-                            </span>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -1310,13 +1348,13 @@ export default function App() {
                   onClick={() => setDrilldownType(drilldownType === 'jobs' ? null : 'jobs')}
                   className={`text-left w-full cursor-pointer transition-all hover:scale-[1.015] active:scale-[0.985] rounded-2xl ${
                     drilldownType === 'jobs'
-                      ? 'ring-2 ring-indigo-500 bg-[#161d36] border-transparent'
-                      : isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20 hover:border-indigo-500/50' : 'bg-white border border-gray-150 hover:border-indigo-400'
+                      ? 'ring-2 ring-slate-500 bg-[#161d36] border-transparent'
+                      : isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20 hover:border-slate-600' : 'bg-white border border-gray-150 hover:border-slate-400'
                   } p-4 shadow-xs transition-colors duration-200`}
                 >
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans flex items-center justify-between">
                     <span>Crafting Pipeline</span>
-                    <span className="text-[9px] text-indigo-400 uppercase font-bold tracking-tight">Inspect Who/What →</span>
+                    <span className={`text-[9px] ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase font-bold tracking-tight`.trim()}>Inspect Who/What →</span>
                   </div>
                   <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-white' : 'text-slate-900'}`}>
                     {activeJobs.length} Projects
@@ -1332,15 +1370,15 @@ export default function App() {
                   onClick={() => setDrilldownType(drilldownType === 'tasks' ? null : 'tasks')}
                   className={`text-left w-full cursor-pointer transition-all hover:scale-[1.015] active:scale-[0.985] rounded-2xl ${
                     drilldownType === 'tasks'
-                      ? 'ring-2 ring-indigo-500 bg-[#161d36] border-transparent'
-                      : isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20 hover:border-indigo-500/50' : 'bg-white border border-gray-150 hover:border-indigo-400'
+                      ? 'ring-2 ring-slate-500 bg-[#161d36] border-transparent'
+                      : isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20 hover:border-slate-600' : 'bg-white border border-gray-150 hover:border-slate-400'
                   } p-4 shadow-xs transition-colors duration-200`}
                 >
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans flex items-center justify-between">
                     <span>Action Checklist Rows</span>
-                    <span className="text-[9px] text-indigo-400 uppercase font-bold tracking-tight">Inspect Tasks →</span>
+                    <span className={`text-[9px] ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase font-bold tracking-tight`.trim()}>Inspect Tasks →</span>
                   </div>
-                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-indigo-400' : 'text-indigo-655'}`}>
+                  <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-slate-300' : 'text-slate-800'}`}>
                     {totalTasksOpen} Open Tasks
                   </div>
                   <p className={`text-[11px] mt-1 truncate ${isSleekTheme ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -1380,16 +1418,16 @@ export default function App() {
                     exit={{ opacity: 0, height: 0 }}
                     className={`overflow-hidden rounded-3xl border p-6 font-sans mb-6 relative ${
                       isSleekTheme 
-                        ? 'bg-gradient-to-br from-[#12162a] via-[#111625] to-[#0a0c16] border-indigo-500/20' 
-                        : 'bg-[#f0f4f8] border-indigo-200'
+                        ? 'bg-gradient-to-br from-[#12162a] via-[#111625] to-[#0a0c16] border-slate-800/80' 
+                        : 'bg-[#f0f4f8] border-slate-205'
                     }`}
                   >
                     {/* Corner gradient glow */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-2xl rounded-full pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 blur-2xl rounded-full pointer-events-none" />
                     
                     <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/40">
                       <div>
-                        <span className="text-[10px] bg-indigo-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+                        <span className="text-[10px] bg-slate-800 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider font-mono">
                           Live Metrics Inspector
                         </span>
                         <h3 className="text-lg font-sans font-extrabold mt-1">
@@ -1425,12 +1463,12 @@ export default function App() {
                                 setDrilldownType(null);
                               }}
                               className={`group p-4 rounded-2xl border transition-all hover:bg-slate-950/40 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                                isSleekTheme ? 'bg-[#151a2d] border-slate-800/80 hover:border-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-400'
+                                isSleekTheme ? 'bg-[#151a2d] border-slate-800/80 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-400'
                               }`}
                             >
                               {/* WHO Column */}
                               <div className="md:w-1/3 space-y-1">
-                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHO (Client Account)</div>
+                                <div className={`text-[9px] font-mono ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold uppercase`.trim()}>WHO (Client Account)</div>
                                 <h4 className="text-sm font-extrabold text-slate-100">{job.clientName}</h4>
                                 <p className="text-xs text-slate-400">📍 Area Suburb: <strong className="text-slate-350">{job.area}</strong></p>
                                 <p className="text-[11px] text-slate-450 truncate">{job.phone} • {job.email}</p>
@@ -1438,10 +1476,10 @@ export default function App() {
 
                               {/* WHAT Column */}
                               <div className="md:w-1/3 space-y-1.5">
-                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHAT (Active Stage Door)</div>
+                                <div className={`text-[9px] font-mono ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold uppercase`.trim()}>WHAT (Active Stage Door)</div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-bold text-slate-200">{job.status}</span>
-                                  <span className={`text-[9.5px] font-extrabold px-1.5 py-0.5 rounded ${outstanding > 0 ? 'bg-indigo-950 text-indigo-400' : 'bg-emerald-950 text-emerald-400'}`}>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${getStatusBadgeStyles(job.status, isSleekTheme)}`}>{job.status}</span>
+                                  <span className={`text-[9.5px] font-extrabold px-1.5 py-0.5 rounded ${outstanding > 0 ? (isSleekTheme ? 'bg-slate-900 text-slate-300' : 'bg-slate-100 text-slate-700 border border-slate-200') : 'bg-emerald-900 text-emerald-300'}`}>
                                     {outstanding === 0 ? 'All secure' : `${outstanding} steps left`}
                                   </span>
                                 </div>
@@ -1453,12 +1491,12 @@ export default function App() {
                               {/* WHY Column */}
                               <div className="md:w-1/3 justify-between flex items-start gap-4">
                                 <div className="space-y-1">
-                                  <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHY (David Action Gate)</div>
+                                  <div className={`text-[9px] font-mono ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold uppercase`.trim()}>WHY (David Action Gate)</div>
                                   <p className="text-[11px] text-slate-350 leading-snug line-clamp-2">
                                     {job.comments || 'Active contract review is running alongside specifications.'}
                                   </p>
                                   {job.nextAction && (
-                                    <p className="text-[10px] text-indigo-400 font-bold">
+                                    <p className={`text-[10px] ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold`.trim()}>
                                       Next step: ⚙️ {job.nextAction}
                                     </p>
                                   )}
@@ -1466,7 +1504,7 @@ export default function App() {
                                 <div className="flex flex-col items-end shrink-0 self-center">
                                   <div className="text-[9px] text-slate-500 uppercase">Valuation</div>
                                   <div className="text-xs font-mono font-extrabold text-slate-200">R{job.quoteValue.toLocaleString()}</div>
-                                  <div className="text-[9.5px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded-lg mt-1.5 group-hover:translate-x-1 duration-150">
+                                  <div className="text-[9.5px] bg-slate-800 hover:bg-slate-705 text-white font-bold px-2 py-1 rounded-lg mt-1.5 group-hover:translate-x-1 duration-150">
                                     Open →
                                   </div>
                                 </div>
@@ -1491,20 +1529,20 @@ export default function App() {
                                 }
                               }}
                               className={`group p-4 rounded-xl border transition-all hover:bg-slate-950/40 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                                isSleekTheme ? 'bg-[#151a2d] border-slate-800/80 hover:border-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-400'
+                                isSleekTheme ? 'bg-[#151a2d] border-slate-800/80 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-400'
                               }`}
                             >
                               {/* WHO component */}
                               <div className="md:w-1/3">
-                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHO (Active Contract client)</div>
+                                <div className={`text-[9px] font-mono ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold uppercase`.trim()}>WHO (Active Contract client)</div>
                                 <h4 className="text-sm font-extrabold text-slate-100">{job?.clientName || 'Standalone'}</h4>
                                 <p className="text-[11px] text-slate-405">📍 Area Suburb: <strong className="text-slate-300">{job?.area || 'Universal'}</strong></p>
                               </div>
 
                               {/* WHAT task description */}
                               <div className="md:w-1/3 space-y-1">
-                                <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHAT (Pending execution milestone)</div>
-                                <p className="text-xs font-bold text-slate-200 group-hover:text-indigo-400 transition-colors leading-snug">
+                                <div className={`text-[9px] font-mono ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold uppercase`.trim()}>WHAT (Pending execution milestone)</div>
+                                <p className="text-xs font-bold text-slate-200 group-hover:text-[#f1f5f9] dark:group-hover:text-[#f1f5f9] transition-colors leading-snug">
                                   {task.taskName}
                                 </p>
                               </div>
@@ -1512,13 +1550,13 @@ export default function App() {
                               {/* WHY / ACTION info */}
                               <div className="md:w-1/3 flex items-center justify-between gap-4">
                                 <div>
-                                  <div className="text-[9px] font-mono text-indigo-400 font-bold uppercase">WHY (Milestone context)</div>
+                                  <div className={`text-[9px] font-mono ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-bold uppercase`.trim()}>WHY (Milestone context)</div>
                                   <p className="text-[11px] text-slate-350 leading-snug">
-                                    Requires completion under stage gateway: <strong className="text-indigo-400">{task.stage}</strong>
+                                    Requires completion under stage gateway: <strong className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>{task.stage}</strong>
                                   </p>
                                 </div>
                                 <div className="text-right shrink-0">
-                                  <div className="text-[9.5px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded-lg group-hover:translate-x-1 duration-150">
+                                  <div className="text-[9.5px] bg-slate-800 hover:bg-slate-705 text-white font-bold px-2 py-1 rounded-lg group-hover:translate-x-1 duration-150">
                                     Go To Checklist →
                                   </div>
                                 </div>
@@ -1551,7 +1589,7 @@ export default function App() {
                         onClick={() => setStatusFilter(chip.key)}
                         className={`text-[11px] font-bold px-3 py-1.5 rounded-lg shrink-0 cursor-pointer transition border ${
                           statusFilter === chip.key
-                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
+                            ? 'bg-slate-800 border-red-600 text-white shadow-xs'
                             : isSleekTheme
                               ? 'bg-slate-900/60 hover:bg-slate-850 text-slate-350 border-slate-800'
                               : 'bg-white hover:bg-gray-50 text-gray-500 border-gray-200'
@@ -1574,8 +1612,8 @@ export default function App() {
                     placeholder="Search master projects by client name, suburb / area, or active gate description..."
                     className={`w-full text-xs font-sans border rounded-xl pl-9 pr-4 py-2.5 outline-none transition-all font-semibold ${
                       isSleekTheme
-                        ? 'bg-slate-950 border-slate-850 text-white focus:bg-slate-950/90 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-950'
-                        : 'bg-slate-50 hover:bg-slate-100/50 focus:bg-white border-slate-200/80 text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-105'
+                        ? 'bg-slate-950 border-slate-850 text-white focus:bg-slate-950/90 focus:border-slate-500 focus:ring-2 focus:ring-slate-900'
+                        : 'bg-slate-50 hover:bg-slate-100/50 focus:bg-white border-slate-200/80 text-slate-900 focus:border-slate-500 focus:ring-2 focus:ring-red-100'
                     }`}
                   />
                 </div>
@@ -1599,8 +1637,8 @@ export default function App() {
                           }}
                           className={`group border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[220px] ${
                             isSleekTheme
-                              ? 'bg-[#111625] border-slate-800/80 hover:border-indigo-500 hover:shadow-indigo-950/20 text-slate-100'
-                              : 'bg-white border-gray-150 hover:border-indigo-400 text-slate-800'
+                              ? 'bg-[#111625] border-slate-800/80 hover:border-slate-500 hover:shadow-red-950/20 text-slate-100'
+                              : 'bg-white border-gray-150 hover:border-slate-500 text-slate-800'
                           }`}
                         >
                           {/* Colored top edge based on health */}
@@ -1613,22 +1651,17 @@ export default function App() {
                             {/* Header metadata */}
                             <div className="flex justify-between items-start gap-1 mb-2">
                               <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                                isSleekTheme ? 'bg-slate-900/80 text-indigo-350 border-slate-800/50' : 'bg-slate-50 text-slate-400 border-gray-100'
+                                isSleekTheme ? 'bg-slate-900/80 text-slate-350 border-slate-800/50' : 'bg-slate-50 text-slate-400 border-gray-100'
                               }`}>
                                 {job.id}
                               </span>
-                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                                job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border border-indigo-900/30' :
-                                job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border border-rose-900/30 font-semibold' :
-                                job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border border-amber-900/30' : 
-                                (isSleekTheme ? 'bg-slate-900 text-slate-300 border border-slate-800' : 'bg-slate-100 text-slate-600')
-                              }`}>
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${getStatusBadgeStyles(job.status, isSleekTheme)}`}>
                                 {job.status}
                               </span>
                             </div>
 
                             {/* Title client */}
-                            <h3 className={`text-md font-sans font-extrabold duration-150 ${isSleekTheme ? 'text-[#f1f5f9] group-hover:text-indigo-400' : 'text-slate-900 group-hover:text-indigo-600'}`}>
+                            <h3 className={`text-md font-sans font-extrabold duration-150 ${isSleekTheme ? 'text-[#f1f5f9] group-hover:text-[#f1f5f9] dark:group-hover:text-[#f1f5f9]' : 'text-slate-900 group-hover:text-[#f1f5f9] dark:group-hover:text-[#f1f5f9]'}`}>
                               {job.clientName}
                             </h3>
                             <p className="text-[11px] text-slate-400 font-medium font-sans flex items-center gap-1 mt-0.5">
@@ -1645,7 +1678,7 @@ export default function App() {
                           <div className={`pt-3 border-t mt-4 flex items-center justify-between ${isSleekTheme ? 'border-slate-800/50' : 'border-gray-100/85'}`}>
                             <div>
                               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block leading-tight font-sans">ACTIVE STATUS TASKS</span>
-                              <span className={`text-xs font-sans font-bold ${outstandingCount > 0 ? (isSleekTheme ? 'text-indigo-400' : 'text-indigo-650') : 'text-emerald-500'}`}>
+                              <span className={`text-xs font-sans font-bold ${outstandingCount > 0 ? (isSleekTheme ? 'text-slate-300' : 'text-emerald-600') : 'text-emerald-500'}`}>
                                 {outstandingCount === 0 ? 'All Completed ✓' : `${outstandingCount} Tasks Outstanding`}
                               </span>
                             </div>
@@ -1679,29 +1712,29 @@ export default function App() {
                     {spotlightJob ? (
                       <div className={`lg:col-span-2 rounded-3xl p-6 border relative overflow-hidden flex flex-col justify-between min-h-[290px] transition-all duration-300 ${
                         isSleekTheme 
-                          ? 'bg-gradient-to-br from-[#12162a] to-[#0d0f1a] border-indigo-500/20 text-slate-100 shadow-indigo-950/20' 
-                          : 'bg-gradient-to-br from-indigo-50/70 to-white border-indigo-150 text-slate-800'
+                          ? 'bg-gradient-to-br from-[#12162a] to-[#0d0f1a] border-slate-800/80 text-slate-100 shadow-red-950/20' 
+                          : 'bg-gradient-to-br from-red-50/70 to-white border-slate-205 text-slate-800'
                       }`}>
                         <div className="absolute top-0 right-0 p-4">
                           <span className="flex h-3.5 w-3.5 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-indigo-500"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500"></span>
                           </span>
                         </div>
                         
                         <div className="space-y-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-[9px] bg-indigo-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+                            <span className="text-[9px] bg-slate-800 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider font-mono">
                               HIGH VALUE STRATEGIC SPOTLIGHT
                             </span>
-                            <span className="text-xs text-indigo-400 font-mono font-bold">#{spotlightJob.id}</span>
+                            <span className={`text-xs ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono font-bold`.trim()}>#{spotlightJob.id}</span>
                           </div>
                           <div>
                             <h3 className={`text-2xl font-sans font-extrabold tracking-tight ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-900'}`}>
                               {spotlightJob.clientName}
                             </h3>
                             <p className="text-xs text-slate-400 font-medium font-sans mt-0.5">
-                              📍 Location Suburb: <strong className="text-indigo-400">{spotlightJob.area}</strong> • Phase: <strong className="text-indigo-400">{spotlightJob.status}</strong>
+                              📍 Location Suburb: <strong className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>{spotlightJob.area}</strong> • Phase: <strong className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} `.trim()}>{spotlightJob.status}</strong>
                             </p>
                           </div>
                           <p className={`text-xs leading-relaxed max-w-xl ${isSleekTheme ? 'text-slate-350' : 'text-slate-600'}`}>
@@ -1712,11 +1745,11 @@ export default function App() {
                           <div className="space-y-1.5 pt-2">
                             <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
                               <span>Milestone Booking Deposit Secure Check</span>
-                              <span className="text-indigo-400 font-mono">{((spotlightJob.depositReceived / spotlightJob.quoteValue) * 100).toFixed(0)}% Secured</span>
+                              <span className={` ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono`.trim()}>{((spotlightJob.depositReceived / spotlightJob.quoteValue) * 100).toFixed(0)}% Secured</span>
                             </div>
                             <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-slate-700/50">
                               <div 
-                                className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full transition-all duration-500" 
+                                className="bg-gradient-to-r from-red-500 to-red-600 h-full transition-all duration-500" 
                                 style={{ width: `${Math.min(100, (spotlightJob.depositReceived / spotlightJob.quoteValue) * 100)}%` }}
                               />
                             </div>
@@ -1747,7 +1780,7 @@ export default function App() {
                               setSelectedJobId(spotlightJob.id);
                               setActiveTab('workflow');
                             }}
-                            className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold text-[11px] px-4 py-2 rounded-xl transition cursor-pointer select-none flex items-center justify-center gap-1.5 self-end sm:self-auto"
+                            className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-extrabold text-[11px] px-4 py-2 rounded-xl transition cursor-pointer select-none flex items-center justify-center gap-1.5 self-end sm:self-auto"
                           >
                             <span>Open Master Passport</span>
                             <ArrowRight className="h-4 w-4" />
@@ -1766,7 +1799,7 @@ export default function App() {
                     }`}>
                       <div>
                         <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1.5 font-sans">
-                          <Clock className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
+                          <Clock className={`h-3.5 w-3.5 ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} animate-pulse`.trim()} />
                           OPERATIONS TELEMETRY
                         </h4>
                         <h3 className="text-md sm:text-lg font-sans font-extrabold tracking-tight">Gate Compliance Lock</h3>
@@ -1775,7 +1808,7 @@ export default function App() {
                         <div className="space-y-2.5 mt-5">
                           <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-850 flex items-center justify-between">
                             <span className="text-xs text-slate-350 font-medium">Crafting Queue</span>
-                            <span className="text-xs font-bold text-indigo-400 font-mono">{activeJobs.length} Projects</span>
+                            <span className={`text-xs font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} font-mono`.trim()}>{activeJobs.length} Projects</span>
                           </div>
                           <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-850 flex items-center justify-between">
                             <span className="text-xs text-slate-350 font-medium">Active Revenue Locked</span>
@@ -1802,10 +1835,10 @@ export default function App() {
                     }`}>
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
-                          <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-sans">
+                          <h4 className={`text-[10px] font-bold ${isSleekTheme ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest font-sans`.trim()}>
                             PENDING CONSOLE STEPS
                           </h4>
-                          <span className="text-[9px] bg-slate-900 text-indigo-300 border border-slate-800 px-2 py-0.5 rounded">
+                          <span className="text-[9px] bg-slate-900 text-slate-350 border border-slate-800 px-2 py-0.5 rounded">
                             QUICK ACTION
                           </span>
                         </div>
@@ -1826,10 +1859,10 @@ export default function App() {
                                     type="checkbox" 
                                     checked={false} 
                                     readOnly 
-                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0 shrink-0 h-3.5 w-3.5 cursor-pointer"
+                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-emerald-600 focus:ring-0 focus:ring-offset-0 shrink-0 h-3.5 w-3.5 cursor-pointer"
                                   />
                                   <div className="min-w-0">
-                                    <p className="text-[11px] font-bold text-slate-200 truncate group-hover:text-indigo-405 transition-colors leading-tight">
+                                    <p className="text-[11px] font-bold text-slate-200 truncate group-hover:text-[#f1f5f9] dark:group-hover:text-[#f1f5f9] transition-colors leading-tight">
                                       {t.taskName}
                                     </p>
                                     <span className="text-[9px] text-[#818cf8] font-mono block leading-none mt-0.5">
@@ -1871,8 +1904,8 @@ export default function App() {
                               }}
                               className={`p-4 border rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[110px] ${
                                 isSleekTheme 
-                                  ? 'bg-[#121625] border-slate-800/80 hover:border-indigo-500 text-slate-100 shadow-3xs' 
-                                  : 'bg-white border-gray-150 hover:border-indigo-400 text-slate-850'
+                                  ? 'bg-[#121625] border-slate-800/80 hover:border-slate-500 text-slate-100 shadow-3xs' 
+                                  : 'bg-white border-gray-150 hover:border-slate-500 text-slate-850'
                               }`}
                             >
                               <div>
@@ -1885,7 +1918,7 @@ export default function App() {
                               <div className="flex items-center justify-between border-t border-slate-800/40 pt-2 mt-2 font-sans">
                                 <span className="text-[10px] font-semibold text-emerald-450 font-mono">R{job.quoteValue.toLocaleString()}</span>
                                 <span className={`text-[8.5px] font-extrabold px-1.5 py-0.5 rounded leading-none ${
-                                  outstanding === 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400'
+                                  outstanding === 0 ? 'bg-emerald-500/20 text-emerald-400' : isSleekTheme ? 'bg-slate-800/50 text-slate-350' : 'bg-slate-100 text-slate-700'
                                 }`}>
                                   {outstanding === 0 ? 'DONE ✓' : `${outstanding} PENDING`}
                                 </span>
@@ -1895,185 +1928,9 @@ export default function App() {
                         })}
                       </div>
                     </div>
-
                   </div>
                 );
               })()}
-
-              {/* Layout Option 3: Professional Dense Spreadsheet Grid (Retired) */}
-              {false && (
-                <div className={`overflow-x-auto border rounded-2xl shadow-sm ${
-                  isSleekTheme ? 'bg-[#111625] border-slate-800/80 text-white shadow-slate-950/20' : 'bg-white border-gray-150 text-slate-800'
-                }`}>
-                  <table className="w-full text-left border-collapse font-sans text-xs select-none">
-                    <thead className={`text-[10px] font-bold uppercase tracking-widest border-b ${
-                      isSleekTheme ? 'bg-slate-950 text-slate-450 border-slate-850' : 'bg-slate-50 text-slate-500 border-gray-150'
-                    }`}>
-                      <tr>
-                        <th className="py-3 px-4 font-mono">Project ID</th>
-                        <th className="py-3 px-4">Master Client Name</th>
-                        <th className="py-3 px-4">Suburb area</th>
-                        <th className="py-3 px-4">Active Stage Gate</th>
-                        <th className="py-3 px-4">Milestone Health</th>
-                        <th className="py-3 px-4 text-right">Booking Deposit Secure</th>
-                        <th className="py-3 px-4 text-right">Quote Settle Value</th>
-                        <th className="py-3 px-4 text-center">Operational Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className={`divide-y ${isSleekTheme ? 'divide-slate-850' : 'divide-gray-150'}`}>
-                      {filteredJobs.map((job) => {
-                        const outstanding = getTasksOutstandingCount(job.id);
-                        const depositPct = job.quoteValue > 0 ? (job.depositReceived / job.quoteValue) * 100 : 0;
-                        const isOk = job.health === 'On Track';
-                        const isWarning = job.health === 'Needs Attention';
-
-                        return (
-                          <tr 
-                            key={job.id} 
-                            id={`table-row-${job.id}`}
-                            className={`hover:bg-indigo-500/5 transition cursor-pointer ${isSleekTheme ? 'hover:bg-slate-900/40' : 'hover:bg-slate-100/40'}`}
-                            onClick={() => {
-                              setSelectedJobId(job.id);
-                              setActiveTab('workflow');
-                            }}
-                          >
-                            <td className="py-3 px-4 font-mono font-bold text-indigo-400 text-xs">{job.id}</td>
-                            <td className="py-3 px-4 font-extrabold text-sm tracking-tight">{job.clientName}</td>
-                            <td className="py-3 px-4 text-slate-450 font-medium">📍 {job.area}</td>
-                            <td className="py-3 px-4">
-                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold inline-block border ${
-                                job.status.includes('Production') ? 'bg-indigo-950 text-indigo-300 border-indigo-900/30' :
-                                job.status.includes('Design') ? 'bg-rose-950 text-rose-300 border-rose-900/30' :
-                                job.status.includes('Deposit') ? 'bg-amber-950 text-amber-300 border-amber-900/30' : 
-                                (isSleekTheme ? 'bg-slate-900 text-slate-300 border-slate-800' : 'bg-slate-100 text-slate-600 border-transparent')
-                              }`}>
-                                {job.status}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className={`inline-flex items-center gap-1.5 font-bold text-[10px] py-0.5 px-2 rounded-full border ${
-                                isOk ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15' :
-                                isWarning ? 'bg-amber-500/10 text-amber-400 border-amber-500/15' : 'bg-rose-500/10 text-rose-450 border-rose-500/15'
-                              }`}>
-                                <span className={`h-1.5 w-1.5 rounded-full ${isOk ? 'bg-emerald-500' : isWarning ? 'bg-amber-500' : 'bg-rose-500'}`} />
-                                {job.health}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-right">
-                              <div className="flex flex-col items-end">
-                                <span className="font-mono text-emerald-400 font-bold text-xs">R{job.depositReceived.toLocaleString()}</span>
-                                <span className="text-[9px] text-slate-450 tracking-tight leading-none mt-0.5">{depositPct.toFixed(0)}% secure</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4 text-right font-mono font-bold text-xs">
-                              R{job.quoteValue.toLocaleString()}
-                            </td>
-                            <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                              <button
-                                id={`row-open-btn-${job.id}`}
-                                onClick={() => {
-                                  setSelectedJobId(job.id);
-                                  setActiveTab('workflow');
-                                }}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-xl cursor-pointer shadow-3xs transition"
-                              >
-                                View Passport
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Layout Option 4: Process stage Kanban Boards Pipeline (Retired) */}
-              {false && (
-                <div className="flex gap-4 overflow-x-auto pb-4 select-none font-sans min-h-[460px] max-w-full">
-                  {([
-                    { title: '1. New Leads', color: 'border-slate-800/60 bg-slate-900/10', check: (j) => j.status.includes('1 ') || j.status.includes('2 ') || j.status.includes('3 ') || j.status.includes('4 ') },
-                    { title: '2. Design Briefing', color: 'border-rose-900/40 bg-rose-950/5', check: (j) => j.status.includes('5 ') || j.status.includes('6 ') },
-                    { title: '3. Awaiting Deposit', color: 'border-amber-900/40 bg-amber-950/5', check: (j) => j.status.includes('7 ') },
-                    { title: '4. Active Workspace', color: 'border-indigo-900/40 bg-indigo-950/5', check: (j) => j.status.includes('8 ') || j.status.includes('9 ') || j.status.includes('10 ') || j.status.includes('11 ') },
-                    { title: '5. Complete Handover', color: 'border-emerald-900/40 bg-emerald-950/5', check: (j) => j.status.includes('12 ') }
-                  ] as const).map((stage) => {
-                    const columnJobs = filteredJobs.filter(stage.check);
-                    return (
-                      <div 
-                        key={stage.title} 
-                        className={`flex-1 min-w-[270px] max-w-[310px] rounded-2xl border p-4 flex flex-col h-[525px] ${stage.color} ${isSleekTheme ? 'border-slate-800/80 bg-[#111625]/40' : 'border-gray-200 bg-slate-50/20'}`}
-                      >
-                        {/* Stage Column Header */}
-                        <div className="flex items-center justify-between mb-4 shrink-0 font-sans">
-                          <h3 className={`text-xs font-extrabold uppercase tracking-widest ${isSleekTheme ? 'text-[#f1f5f9]' : 'text-slate-800'}`}>
-                            {stage.title}
-                          </h3>
-                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${isSleekTheme ? 'bg-slate-905 text-indigo-400' : 'bg-slate-200 text-slate-800'}`}>
-                            {columnJobs.length}
-                          </span>
-                        </div>
-
-                        {/* Staged Cards container */}
-                        <div className="space-y-3 overflow-y-auto flex-1 pr-1">
-                          {columnJobs.map((job) => {
-                            const outstanding = getTasksOutstandingCount(job.id);
-                            return (
-                              <div
-                                key={job.id}
-                                id={`kanban-card-${job.id}`}
-                                onClick={() => {
-                                  setSelectedJobId(job.id);
-                                  setActiveTab('workflow');
-                                }}
-                                className={`group p-3 rounded-xl border hover:border-indigo-500 transition-all duration-155 cursor-pointer relative flex flex-col justify-between min-h-[120px] ${
-                                  isSleekTheme 
-                                    ? 'bg-[#121625] border-slate-805 text-slate-150 hover:shadow-lg hover:shadow-indigo-950/20' 
-                                    : 'bg-white border-gray-200 hover:border-indigo-400 text-slate-850'
-                                }`}
-                              >
-                                <span className={`absolute top-0 inset-x-0 h-1.5 rounded-t-xl ${
-                                  job.health === 'On Track' ? 'bg-emerald-500' :
-                                  job.health === 'Needs Attention' ? 'bg-amber-500' : 'bg-rose-500'
-                                }`} />
-                                
-                                <div className="space-y-1 mt-1 pt-1">
-                                  <div className="flex justify-between text-[9px] text-slate-450 font-mono">
-                                    <span>{job.id}</span>
-                                    <span>📍 {job.area}</span>
-                                  </div>
-                                  <h4 className={`text-xs font-extrabold tracking-tight truncate ${isSleekTheme ? 'text-white group-hover:text-indigo-405' : 'text-slate-905 group-hover:text-indigo-650'}`}>
-                                    {job.clientName}
-                                  </h4>
-                                </div>
-
-                                <div className="space-y-1.5 border-t border-slate-800/40 pt-2 mt-2 font-sans">
-                                  <div className="flex items-center justify-between text-[10px]">
-                                    <span className="text-slate-450">Deposit received:</span>
-                                    <span className="font-mono font-extrabold text-emerald-450">R{job.depositReceived.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex items-center justify-between text-[10px]">
-                                    <span className="text-slate-450">Action steps:</span>
-                                    <span className={`font-bold ${outstanding === 0 ? 'text-emerald-400 animate-pulse' : 'text-indigo-400'}`}>
-                                      {outstanding === 0 ? 'All secure ✓' : `${outstanding} steps remaining`}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-
-                          {columnJobs.length === 0 && (
-                            <div className="h-full border border-dashed border-slate-800/50 rounded-xl flex items-center justify-center p-8 text-center text-xs text-slate-500 leading-relaxed font-sans font-semibold">
-                              Empty column
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
 
               {/* Empty State visual */}
               {filteredJobs.length === 0 && (

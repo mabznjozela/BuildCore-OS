@@ -45,7 +45,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4 mb-6 gap-2">
         <div>
           <h2 className="text-xl font-sans font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-indigo-600" />
+            <Wrench className="h-5 w-5 text-emerald-600" />
             Kitchen Specifications
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -71,7 +71,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
         {/* Row 1: Cabinet Construction */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Layers className="h-4 w-4 text-indigo-500" />
+            <Layers className="h-4 w-4 text-slate-500" />
             <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-gray-400">
               1. Cabinet Construction & Carcass
             </h3>
@@ -86,7 +86,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.boardType}
                 onChange={handleChange}
                 placeholder="e.g. Moisture-resistant MDF (18mm)"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors text-gray-950 font-sans"
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-colors text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -98,7 +98,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.boardSupplier}
                 onChange={handleChange}
                 placeholder="e.g. Egger UK, Kronospan"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors text-gray-950 font-sans"
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-colors text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -110,7 +110,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.doorType}
                 onChange={handleChange}
                 placeholder="e.g. Handleless Shaker, J-Pull Matt Lacquer"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors text-gray-950 font-sans"
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-colors text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -122,7 +122,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.doorSupplier}
                 onChange={handleChange}
                 placeholder="e.g. In-house spray workshop, Stock Panel"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors text-gray-950 font-sans"
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-colors text-gray-950 font-sans"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
 
             <label className={`flex flex-col justify-between p-3.5 border rounded-xl cursor-pointer select-none transition-all ${
               specs.ledLighting
-                ? 'border-indigo-500/40 bg-indigo-50/20 text-indigo-900 shadow-sm'
+                ? 'border-red-500/40 bg-slate-50 text-slate-900 shadow-sm'
                 : 'border-gray-200 hover:bg-gray-50 text-gray-600'
             }`}>
               <div className="flex justify-between items-center w-full mb-1">
@@ -169,7 +169,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                   name="ledLighting"
                   checked={specs.ledLighting}
                   onChange={handleChange}
-                  className="h-4 w-4 accent-indigo-600 rounded"
+                  className="h-4 w-4 accent-red-600 rounded"
                 />
               </div>
               <span className="text-[10px] text-gray-400">Ambient under-cabinet strip</span>
@@ -177,7 +177,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
 
             <label className={`flex flex-col justify-between p-3.5 border rounded-xl cursor-pointer select-none transition-all ${
               specs.pushToOpen
-                ? 'border-indigo-500/40 bg-indigo-50/20 text-indigo-900 shadow-sm'
+                ? 'border-red-500/40 bg-slate-50 text-slate-900 shadow-sm'
                 : 'border-gray-200 hover:bg-gray-50 text-gray-600'
             }`}>
               <div className="flex justify-between items-center w-full mb-1">
@@ -188,7 +188,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                   name="pushToOpen"
                   checked={specs.pushToOpen}
                   onChange={handleChange}
-                  className="h-4 w-4 accent-indigo-600 rounded"
+                  className="h-4 w-4 accent-red-600 rounded"
                 />
               </div>
               <span className="text-[10px] text-gray-400">Handleless mechanical touch</span>
@@ -196,7 +196,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
 
             <label className={`flex flex-col justify-between p-3.5 border rounded-xl cursor-pointer select-none transition-all ${
               specs.glassDoors
-                ? 'border-indigo-500/40 bg-indigo-50/20 text-indigo-900 shadow-sm'
+                ? 'border-red-500/40 bg-slate-50 text-slate-900 shadow-sm'
                 : 'border-gray-200 hover:bg-gray-50 text-gray-600'
             }`}>
               <div className="flex justify-between items-center w-full mb-1">
@@ -207,7 +207,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                   name="glassDoors"
                   checked={specs.glassDoors}
                   onChange={handleChange}
-                  className="h-4 w-4 accent-indigo-600 rounded"
+                  className="h-4 w-4 accent-red-600 rounded"
                 />
               </div>
               <span className="text-[10px] text-gray-400">Tinted/fluted accent frames</span>
@@ -233,7 +233,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.stoneSupplier}
                 onChange={handleChange}
                 placeholder="e.g. Gerald Culnane"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors text-gray-950 font-sans"
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-colors text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -245,7 +245,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.stoneColour}
                 onChange={handleChange}
                 placeholder="e.g. Calacatta Classic Quartzite"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors text-gray-950 font-sans"
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-colors text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -257,7 +257,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.stoneThickness}
                 onChange={handleChange}
                 placeholder="e.g. 20mm or 30mm"
-                className={`w-full text-sm border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors text-gray-950 font-sans ${
+                className={`w-full text-sm border rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-colors text-gray-950 font-sans ${
                   isNonStandardStone ? 'border-amber-400 bg-amber-50/10' : 'border-gray-300'
                 }`}
               />
@@ -288,7 +288,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.oven}
                 onChange={handleChange}
                 placeholder="Brand & Model details"
-                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -300,7 +300,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.hob}
                 onChange={handleChange}
                 placeholder="Brand & Model details"
-                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -312,7 +312,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.extractor}
                 onChange={handleChange}
                 placeholder="Downdraft / Canopy spec"
-                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none text-gray-950 font-sans"
               />
             </div>
             <div>
@@ -324,7 +324,7 @@ export default function SpecificationsSection({ job, onUpdateSpecs }: Specificat
                 value={specs.fridge}
                 onChange={handleChange}
                 placeholder="Integrated french-door, etc"
-                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-gray-950 font-sans"
+                className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none text-gray-950 font-sans"
               />
             </div>
           </div>
