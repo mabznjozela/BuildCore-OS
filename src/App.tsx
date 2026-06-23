@@ -867,11 +867,7 @@ export default function App() {
             <div>
               <h1 className="text-md sm:text-lg font-sans font-extrabold tracking-tight text-white flex items-center gap-1.5">
                 Kitchen Lab OS
-                <span className="text-[9px] bg-indigo-500 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-widest leading-none">V2.2 PREMIUM</span>
               </h1>
-              <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider font-sans">
-                Premium Craftsman Master Dashboard
-              </p>
             </div>
           </div>
 
@@ -879,13 +875,22 @@ export default function App() {
             <button
               id="theme-toggle-btn"
               onClick={() => setIsSleekTheme(!isSleekTheme)}
-              className={`text-xs px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 font-bold transition-all cursor-pointer border ${
+              className={`text-xs px-2.5 py-1.5 sm:py-2 rounded-xl flex items-center justify-center font-bold transition-all cursor-pointer border ${
                 isSleekTheme
                   ? 'bg-indigo-950/40 text-indigo-300 border-indigo-700/40 hover:bg-indigo-950/80'
                   : 'bg-slate-800 text-slate-200 border-transparent hover:bg-slate-700'
               }`}
+              title="Switch theme"
             >
-              {isSleekTheme ? '🔳 Minimalist Chalk' : '🖤 Sleek Carbon'}
+              {isSleekTheme ? '🔳' : '🖤'}
+            </button>
+            <button
+              id="top-add-job-btn"
+              onClick={() => setShowAddJobModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-xs font-bold text-white px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 cursor-pointer select-none font-sans"
+            >
+              <PlusCircle className="h-4 w-4" />
+              New Project
             </button>
             <button
               id="lock-dashboard-btn"
@@ -894,15 +899,6 @@ export default function App() {
               title="Click to lock the console instantly"
             >
               🔒 Lock Console
-            </button>
-            {/* Export Master Excel hidden for next tier / tier upgrade option */}
-            <button
-              id="top-add-job-btn"
-              onClick={() => setShowAddJobModal(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-xs font-bold text-white px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 cursor-pointer select-none font-sans"
-            >
-              <PlusCircle className="h-4 w-4" />
-              New Project
             </button>
           </div>
         </div>
@@ -1215,7 +1211,7 @@ export default function App() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-mono font-bold bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full">
-                            {tasks.filter(t => !t.isCompleted && activeJobs.some(j => j.id === t.jobId)).length} Pending
+                            {tasks.filter(t => !t.complete && activeJobs.some(j => j.id === t.jobId)).length} Pending
                           </span>
                           <button
                             id="toggle-floor-tasks-btn"
@@ -1242,7 +1238,7 @@ export default function App() {
                             className="space-y-3 max-h-[460px] overflow-y-auto pr-1 font-sans"
                           >
                             {(() => {
-                              const floorOpenTasks = tasks.filter(t => !t.isCompleted && activeJobs.some(j => j.id === t.jobId));
+                              const floorOpenTasks = tasks.filter(t => !t.complete && activeJobs.some(j => j.id === t.jobId));
                               if (floorOpenTasks.length === 0) {
                                 return (
                                   <div className="text-center py-16 text-slate-450 border border-dashed border-slate-800/65 rounded-2xl flex flex-col items-center justify-center">
@@ -1295,7 +1291,7 @@ export default function App() {
                             <span className="text-2xl mb-2">📋</span>
                             <span className="text-xs font-mono font-bold text-slate-300">Click to expand tasks list</span>
                             <span className="text-[10px] font-mono text-slate-550 mt-1">
-                              {tasks.filter(t => !t.isCompleted && activeJobs.some(j => j.id === t.jobId)).length} pending tasks on the floor
+                              {tasks.filter(t => !t.complete && activeJobs.some(j => j.id === t.jobId)).length} pending tasks on the floor
                             </span>
                           </motion.div>
                         )}
@@ -1306,7 +1302,7 @@ export default function App() {
               ) : (
                 <>
                   {/* Core KPI metrics Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 
                 {/* Metric 1 */}
                 <button
@@ -1351,6 +1347,27 @@ export default function App() {
                     Click to drill down into active checklist
                   </p>
                 </button>
+
+                {/* Metric 3: Total Pipeline Valuation */}
+                <div
+                  id="total-pipeline-valuation-card"
+                  className={`p-4 rounded-2xl shadow-xs transition-all duration-200 flex flex-col justify-between ${
+                    isSleekTheme ? 'bg-[#111625] border border-slate-800/80 shadow-slate-950/20' : 'bg-white border border-gray-150'
+                  }`}
+                >
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans flex items-center justify-between">
+                      <span>Total Revenue Pipeline</span>
+                      <span className="text-[10px] font-bold text-emerald-400 font-mono">🔒 SECURE</span>
+                    </div>
+                    <div className={`text-2xl font-sans font-extrabold mt-1 ${isSleekTheme ? 'text-white' : 'text-slate-900'}`}>
+                      R{totalContractPipeline.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className={`mt-1 flex items-center justify-between text-[11px] ${isSleekTheme ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <span>Active Client Contract Estimations</span>
+                  </div>
+                </div>
 
               </div>
 
