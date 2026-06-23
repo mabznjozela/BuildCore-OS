@@ -27,30 +27,9 @@ const REPLACEMENTS: { lookup: RegExp; replace: string }[] = [
 ];
 
 export function sanitizeString(val: string): string {
-  if (!val || typeof val !== 'string') return val;
-  let result = val;
-  for (const r of REPLACEMENTS) {
-    result = result.replace(r.lookup, r.replace);
-  }
-  return result;
+  return val;
 }
 
 export function sanitizeObject<T>(obj: T): T {
-  if (obj === null || obj === undefined) return obj;
-  if (typeof obj === 'string') {
-    return sanitizeString(obj) as unknown as T;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item)) as unknown as T;
-  }
-  if (typeof obj === 'object') {
-    const newObj = {} as any;
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        newObj[key] = sanitizeObject((obj as any)[key]);
-      }
-    }
-    return newObj as T;
-  }
   return obj;
 }
