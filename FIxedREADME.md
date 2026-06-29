@@ -1,27 +1,22 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
-
 # BuildCore-OS
 
-This repository contains everything you need to run your app locally.
+Welcome to the project repository. Follow these 5 simple steps to get the project up and running in your account.
 
-## Setup Instructions
+## Onboarding Guide
 
-### Step 1: Get a Google AI Studio Account & API Key
-Before running the code, you need access to Google's AI platform:
-1. Go to [Google AI Studio](https://aistudio.google.com/).
-2. Sign in using any standard Google or Google Workspace account.
-3. Click the **Get API key** button in the top left corner.
-4. Click **Create API key** and copy the generated key.
+### Step 1 — Create a free Google account
+If you don't have one, go to [accounts.google.com](https://accounts.google.com) and click **Create account**. A standard Gmail account works perfectly.
 
-### Step 2: Run Locally
+### Step 2 — Sign into Google AI Studio
+Go to [aistudio.google.com](https://aistudio.google.com) and sign in with your Google account. No paid plan is needed.
 
-**Prerequisites:** Node.js
+### Step 3 — Import the project from GitHub
+Once you are logged into AI Studio:
+1. Click **New project** or the **+** button.
+2. Choose **Import from GitHub** to pull this public repository into your workspace.
 
-1. **Install dependencies:**
-   Run `npm install` in your terminal.
-2. **Set your API Key:**
-   Create a file named `.env.local` in the main folder and add your Gemini API key inside it like this:
-   ```text
-   GEMINI_API_KEY=your_actual_api_key_here
+### Step 4 — Get your own Gemini API key
+In AI Studio, look at the top right, click **Get API key**, and select **Create key**. This key belongs to your account, so any usage is tied to you going forward.
+
+### Step 5 — Update the API key in the project
+Take the new key you just generated and swap it into the project's configuration file to replace the placeholder reference.
