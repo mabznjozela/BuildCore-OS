@@ -9,6 +9,7 @@ interface WorkflowSectionProps {
   onToggleTask: (taskId: string) => void;
   onAddTask: (taskName: string, stage: string) => void;
   onUpdateStatus: (newStatus: JobStatus) => void;
+  isSleekTheme?: boolean;
 }
 
 interface Particle {
@@ -36,7 +37,7 @@ const STATUS_STAGES: { status: JobStatus; stage: string }[] = [
   { status: '12 Complete', stage: 'Handover' }
 ];
 
-export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, onUpdateStatus }: WorkflowSectionProps) {
+export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, onUpdateStatus, isSleekTheme = true }: WorkflowSectionProps) {
   const [newTaskName, setNewTaskName] = useState<string>('');
   const [showAddTaskInput, setShowAddTaskInput] = useState<boolean>(false);
   const [particles, setParticles] = useState<Particle[]>([]);
@@ -176,7 +177,9 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
   }, []);
 
   return (
-    <div id={`workflow-section-${job.id}`} className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm overflow-hidden relative">
+    <div id={`workflow-section-${job.id}`} className={`border rounded-2xl p-6 shadow-sm overflow-hidden relative ${
+      isSleekTheme ? 'bg-[#0f1426] border-slate-850 text-white' : 'bg-white border-gray-150 text-slate-850'
+    }`}>
       
       {/* Absolute particle renderer */}
       {particles.map((p) => (
@@ -212,8 +215,8 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
           </span>
         </div>
 
-        {/* Horizontal scroll of 12 stages with progress colors */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 pt-1 px-1 scrollbar-thin">
+        {/* Responsive grid of 12 stages with progress colors - NO HORIZONTAL SCROLL */}
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 pb-4 pt-1 px-1">
           {STATUS_STAGES.map((step, idx) => {
             const isCurrent = step.status === job.status;
             const currentIndex = STATUS_STAGES.findIndex((s) => s.status === job.status);
@@ -224,19 +227,23 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
                 key={step.status}
                 id={`status-step-btn-${idx}`}
                 onClick={() => onUpdateStatus(step.status)}
-                className={`flex-shrink-0 text-[11px] font-sans font-bold px-3 py-2 rounded-xl transition-all border flex items-center gap-1.5 cursor-pointer ${
+                className={`text-[11px] font-sans font-bold px-3 py-2 rounded-xl transition-all border flex items-center gap-1.5 cursor-pointer leading-tight ${
                   isCurrent
-                    ? 'bg-slate-800 border-red-600 text-white ring-4 ring-slate-500/15'
+                    ? isSleekTheme
+                      ? 'bg-orange-500/25 border-[#ea580c] text-orange-400 ring-2 ring-[#ea580c]/15'
+                      : 'bg-slate-800 border-red-600 text-white ring-4 ring-slate-500/15'
                     : isCompleted
-                    ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
+                    ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                    : isSleekTheme
+                    ? 'bg-slate-950/40 border-slate-850 text-slate-450 hover:border-slate-750 hover:text-white'
                     : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
                 }`}
               >
                 <span className="text-[10px] opacity-75">{idx + 1}</span>
-                <span className="truncate max-w-[120px]">
+                <span className="truncate">
                   {step.status.substring(2)}
                 </span>
-                {isCompleted && <span className="text-emerald-500">✓</span>}
+                {isCompleted && <span className="text-emerald-500 ml-auto shrink-0">✓</span>}
               </button>
             );
           })}
@@ -244,27 +251,31 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
       </div>
 
       {/* Hero Section of Workflow */}
-      <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 md:p-6 mb-5">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200/50 pb-4 mb-4">
+      <div className={`rounded-2xl p-4 md:p-6 mb-5 border ${
+        isSleekTheme ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-100'
+      }`}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800/10 pb-4 mb-4">
           <div>
             <span className="text-[10px] font-bold uppercase text-slate-400">Current Phase workflow</span>
-            <h4 className="text-lg font-sans font-extrabold text-slate-800">
+            <h4 className={`text-lg font-sans font-extrabold ${isSleekTheme ? 'text-white' : 'text-slate-800'}`}>
               {activeStage} Milestones
             </h4>
           </div>
 
           <div className="text-right">
-            <span className="text-xs font-bold text-red-700 block sm:inline mr-2">
+            <span className={`text-xs font-bold block sm:inline mr-2 ${isSleekTheme ? 'text-orange-400' : 'text-red-750'}`}>
               Progress: {completedCount} of {totalCount} Complete
             </span>
-            <span className="text-xs text-gray-400 font-medium">({percentComplete.toFixed(0)}%)</span>
+            <span className="text-xs text-slate-450 font-medium">({percentComplete.toFixed(0)}%)</span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-slate-250 rounded-full h-2 mb-6 relative overflow-hidden">
+        <div className={`w-full rounded-full h-2 mb-6 relative overflow-hidden ${
+          isSleekTheme ? 'bg-slate-900' : 'bg-slate-250'
+        }`}>
           <motion.div
-            className="bg-slate-800 h-2 rounded-full"
+            className={`h-2 rounded-full ${isSleekTheme ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-slate-800'}`}
             initial={{ width: 0 }}
             animate={{ width: `${percentComplete}%` }}
             transition={{ type: 'spring', damping: 15, stiffness: 100 }}
@@ -287,17 +298,21 @@ export default function WorkflowSection({ job, tasks, onToggleTask, onAddTask, o
                 whileTap={{ scale: 0.992 }}
                 className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none relative overflow-hidden ${
                   task.complete
-                    ? 'bg-emerald-50/40 border-emerald-100/55 text-slate-500 line-through decoration-slate-350'
+                    ? isSleekTheme
+                      ? 'bg-emerald-950/20 border-emerald-900/20 text-slate-450 line-through decoration-slate-650'
+                      : 'bg-emerald-50/40 border-emerald-100/55 text-slate-500 line-through decoration-slate-350'
+                    : isSleekTheme
+                    ? 'bg-slate-900 hover:bg-slate-850/80 border-slate-800 text-slate-200 font-semibold'
                     : 'bg-white hover:bg-slate-100/50 border-slate-200 text-slate-800 font-semibold'
                 }`}
               >
                 <div className="shrink-0 mt-0.5">
                   {task.complete ? (
                     <motion.div initial={{ scale: 0.5, rotate: -45 }} animate={{ scale: 1, rotate: 0 }}>
-                      <CheckSquare className="h-4.5 w-4.5 text-emerald-600" />
+                      <CheckSquare className="h-4.5 w-4.5 text-emerald-500" />
                     </motion.div>
                   ) : (
-                    <Square className="h-4.5 w-4.5 isSleekTheme ? 'text-slate-300' : 'text-slate-700' hover:text-emerald-600 transition-colors" />
+                    <Square className={`h-4.5 w-4.5 ${isSleekTheme ? 'text-slate-600' : 'text-slate-400'} hover:text-emerald-500 transition-colors`} />
                   )}
                 </div>
                 <div className="text-xs font-sans text-left leading-relaxed">

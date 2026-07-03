@@ -20,6 +20,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
   const [depositReceived, setDepositReceived] = useState<string>('0');
   const [comments, setComments] = useState<string>('');
   const [siteNotes, setSiteNotes] = useState<string>('');
+  const [installationDate, setInstallationDate] = useState<string>('');
 
   const [boardType, setBoardType] = useState<string>('Moisture-resistant MDF (18mm)');
   const [boardSupplier, setBoardSupplier] = useState<string>('Egger UK');
@@ -51,6 +52,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
       depositReceived: parseFloat(depositReceived) || 0,
       comments: comments.trim() || 'New bespoke premium kitchen design specification project.',
       siteNotes: siteNotes.trim() || 'No special site access problems reported.',
+      installationDate: installationDate || undefined,
       specs: {
         boardType: boardType,
         boardSupplier: boardSupplier,
@@ -216,7 +218,7 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Lead Sourcing</label>
                 <input
@@ -240,6 +242,16 @@ export default function NewJobModal({ onClose, onSave }: NewJobModalProps) {
                   <option value="Needs Attention">Needs Attention (Amber)</option>
                   <option value="At Risk">At Risk (Red Warning)</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Installation / Handover Date</label>
+                <input
+                  id="new-job-installation-date"
+                  type="date"
+                  value={installationDate}
+                  onChange={(e) => setInstallationDate(e.target.value)}
+                  className="w-full text-xs border border-gray-300 rounded-lg p-2 bg-white text-gray-950 focus:border-red-600 outline-none cursor-pointer"
+                />
               </div>
             </div>
           </div>
