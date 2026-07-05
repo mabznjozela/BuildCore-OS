@@ -832,9 +832,9 @@ export default function App() {
                     ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300' 
                     : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
                 }`}
-                title="Lock Console"
+                title="Console Locked"
               >
-                🔒 <span className="hidden md:inline">Lock Console</span>
+                🔒 <span className="hidden md:inline">Console Locked</span>
               </button>
             </div>
           </div>
