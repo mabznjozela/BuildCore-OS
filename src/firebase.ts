@@ -1,23 +1,37 @@
 import { initializeApp } from 'firebase/app';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+
+const env = import.meta.env;
+
+function requireEnv(name: string): string {
+  const value = env[name];
+  if (!value) {
+    throw new Error(
+      `Missing environment variable: ${name}. Copy .env.example to .env.local and fill in the Firebase project values.`,
+    );
+  }
+  return value;
+}
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCp7L1w3_sDRxj1-fSVyUBIZnpV2FHHJP0",
-  authDomain: "ardent-fuze-7tn3v.firebaseapp.com",
-  projectId: "ardent-fuze-7tn3v",
-  storageBucket: "ardent-fuze-7tn3v.firebasestorage.app",
-  messagingSenderId: "1049961621196",
-  appId: "1:1049961621196:web:fe61cfe211c7594eecc469"
+  apiKey: requireEnv('VITE_FIREBASE_API_KEY'),
+  authDomain: requireEnv('VITE_FIREBASE_AUTH_DOMAIN'),
+  projectId: requireEnv('VITE_FIREBASE_PROJECT_ID'),
+  storageBucket: requireEnv('VITE_FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: requireEnv('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+  appId: requireEnv('VITE_FIREBASE_APP_ID'),
 };
 
-const databaseId = "ai-studio-6d4b7cd2-cb8d-4dd6-b0f7-69485cdd024c";
+const databaseId = requireEnv('VITE_FIREBASE_DATABASE_ID');
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with custom databaseId and persistent offline caching
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
   }),
 }, databaseId);
+
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
